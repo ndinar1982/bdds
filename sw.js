@@ -1,6 +1,6 @@
 // Служебный скрипт пусковой страницы: держит в кэше её собственные файлы (сама страница, иконки),
 // чтобы приложение открывалось быстро. Данные семьи сюда не попадают — они загружаются из Google.
-var CACHE='bdds-shell-v1';
+var CACHE='bdds-shell-v2';
 var FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png'];
 self.addEventListener('install',function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(FILES)}).then(function(){return self.skipWaiting()}));

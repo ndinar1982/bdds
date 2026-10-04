@@ -20,6 +20,8 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:15px/1.
 #app{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:var(--bg)}
 .ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:var(--bg)}
 .ov[hidden]{display:none}
+#load{pointer-events:none} /* заставка не перехватывает касания: если она задержалась, тап попадёт в приложение */
+.wait{font-size:13px;min-height:1.3em}
 .ov img{width:72px;height:72px;border-radius:16px}
 .ov h1{margin:0;font-size:19px}
 .ov p{margin:0;color:var(--muted);max-width:360px}
@@ -36,7 +38,7 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 <body>
 <iframe id="app" title="Семейный БДДС" hidden></iframe>
 
-<div class="ov" id="load"><img src="icon-192.png" alt=""><div class="spin" aria-hidden="true"></div><p>Открываю «Семейный БДДС»…</p></div>
+<div class="ov" id="load"><img src="icon-192.png" alt=""><div class="spin" aria-hidden="true"></div><p>Открываю «Семейный БДДС»…</p><p class="wait" id="wait"></p></div>
 
 <div class="ov" id="setup" hidden>
   <img src="icon-192.png" alt="">
@@ -59,26 +61,42 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 (function(){
   var KEY='bdds-app-url', TIMEOUT=25000;
   var $=function(id){return document.getElementById(id)};
-  var frame=$('app'), timer=null, ready=false;
+  var frame=$('app'), timer=null, tick=null, ready=false, loaded=false, t0=0;
   function get(){try{return localStorage.getItem(KEY)||''}catch(e){return ''}}
   function set(v){try{localStorage.setItem(KEY,v)}catch(e){}}
   function show(id){['load','setup','fail'].forEach(function(x){$(x).hidden=(x!==id)})}
   var valid=function(u){return /^https:\/\/script\.google\.com\/.+\/exec(\?.*)?$/.test(u)};
 
+  // убрать заставку и показать приложение
+  function reveal(){
+    clearInterval(tick);if($('load').hidden)return;
+    show(null);
+    // на некоторых телефонах экран не перерисовывается сам после запуска со значка — подталкиваем
+    try{requestAnimationFrame(function(){document.body.style.outline='0 solid transparent';requestAnimationFrame(function(){document.body.style.outline=''})})}catch(_){}
+  }
   function open(){
     var u=get();
     if(!valid(u)){setup(false);return}
-    ready=false;show('load');frame.hidden=false;
-    frame.src=u;
-    clearTimeout(timer);timer=setTimeout(function(){if(!ready)show('fail')},TIMEOUT);
+    ready=false;loaded=false;show('load');frame.hidden=false;$('wait').textContent='';
+    t0=Date.now();frame.src=u;
+    clearTimeout(timer);timer=setTimeout(function(){if(!ready){clearInterval(tick);show('fail')}},TIMEOUT);
+    // счётчик секунд: видно, что загрузка идёт, а не зависла
+    clearInterval(tick);tick=setInterval(function(){var s=Math.round((Date.now()-t0)/1000);if(s>=4)$('wait').textContent=s+' с'},1000);
   }
+  // страница приложения загрузилась — убираем заставку, даже если сообщение «запустилось» ещё не пришло
+  // (если вход в Google не удался, через TIMEOUT всё равно появится экран «Приложение не открылось»)
+  frame.addEventListener('load',function(){if(!frame.getAttribute('src'))return;loaded=true;setTimeout(function(){if(loaded)reveal()},800)});
+  // вернулись в приложение (после запуска со значка телефон иногда сначала сворачивает его) — проверить ещё раз
+  function recheck(){if(ready||loaded)reveal()}
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')recheck()});
+  window.addEventListener('pageshow',recheck);window.addEventListener('focus',recheck);
   function setup(canCancel){
     show('setup');frame.hidden=true;$('url').value=get();$('err').textContent='';$('cancel').hidden=!canCancel;
     setTimeout(function(){$('url').focus()},50);
   }
   // приложение само сообщает, что запустилось (значит, вход в Google в порядке)
   window.addEventListener('message',function(e){
-    if(e.data&&e.data.bdds==='ready'){ready=true;clearTimeout(timer);show(null);
+    if(e.data&&e.data.bdds==='ready'){ready=true;clearTimeout(timer);if($('fail').hidden)reveal();else show(null);
       // отдать приложению готовую ссылку для других устройств (адрес приложения уже внутри)
       try{e.source.postMessage({bdds:'launcher',link:location.origin+location.pathname+'#u='+get()},'*')}catch(_){}}
   });
