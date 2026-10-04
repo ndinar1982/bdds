@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#2f87d0">
 <title>Семейный БДДС</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="dns-prefetch" href="https://script.googleusercontent.com">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
@@ -39,7 +41,7 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 <div class="ov" id="setup" hidden>
   <img src="icon-192.png" alt="">
   <h1>Семейный БДДС</h1>
-  <p>Вставьте один раз ссылку на ваше приложение — ту, что заканчивается на <b>/exec</b>. Она сохранится только на этом телефоне.</p>
+  <p>Вставьте один раз ссылку на ваше приложение — ту, что заканчивается на <b>/exec</b>. Она сохранится только на этом телефоне. На других телефонах вводить не придётся: готовая ссылка для них будет в приложении, в «Настройках».</p>
   <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
   <div class="err" id="err"></div>
   <div class="btns"><button class="primary" id="save">Сохранить и открыть</button><button id="cancel" hidden>Отмена</button></div>
@@ -76,7 +78,9 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   }
   // приложение само сообщает, что запустилось (значит, вход в Google в порядке)
   window.addEventListener('message',function(e){
-    if(e.data&&e.data.bdds==='ready'){ready=true;clearTimeout(timer);show(null)}
+    if(e.data&&e.data.bdds==='ready'){ready=true;clearTimeout(timer);show(null);
+      // отдать приложению готовую ссылку для других устройств (адрес приложения уже внутри)
+      try{e.source.postMessage({bdds:'launcher',link:location.origin+location.pathname+'#u='+get()},'*')}catch(_){}}
   });
   $('save').addEventListener('click',function(){
     var u=$('url').value.trim();
@@ -88,6 +92,9 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   $('retry').addEventListener('click',open);
   $('edit').addEventListener('click',function(){setup(true)});
   $('openBr').addEventListener('click',function(){window.open(get(),'_blank')});
+  // ссылка вида …/bdds/#u=https://script.google.com/…/exec сразу запоминает адрес приложения — вводить ничего не нужно
+  var m=/^#u=(.+)$/.exec(location.hash);
+  if(m){var u='';try{u=decodeURIComponent(m[1])}catch(_){u=m[1]}if(valid(u))set(u);try{history.replaceState(null,'',location.pathname+location.search)}catch(_){}}
   // ссылку можно поменять, открыв эту страницу с #setup в конце адреса
   if(location.hash==='#setup')setup(!!get());else open();
 
