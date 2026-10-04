@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f87d0">
+<title>Семейный БДДС</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+/* Пусковая страница: показывает приложение «Семейный БДДС» (Google Apps Script) на весь экран.
+   Сама ничего не хранит, кроме ссылки на приложение — и та остаётся только на этом телефоне. */
+:root{--bg:#e9f0f7;--fg:#1d2a39;--muted:#5b6c80;--card:#fff;--line:#d3dde8;--accent:#2b8ae0}
+@media (prefers-color-scheme:dark){:root{--bg:#0f151d;--fg:#e5ecf4;--muted:#9eb0c4;--card:#161f2a;--line:#2a3848;--accent:#5aa8f0}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:var(--bg)}
+.ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:var(--bg)}
+.ov[hidden]{display:none}
+.ov img{width:72px;height:72px;border-radius:16px}
+.ov h1{margin:0;font-size:19px}
+.ov p{margin:0;color:var(--muted);max-width:360px}
+.spin{width:22px;height:22px;border:3px solid var(--accent);border-right-color:transparent;border-radius:50%;animation:s .8s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+input{width:100%;max-width:420px;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg)}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(43,138,224,.2)}
+.btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+button{font:inherit;font-weight:700;border-radius:10px;padding:10px 16px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.err{color:#c43a3a;font-weight:600;min-height:1.4em}
+</style>
+</head>
+<body>
+<iframe id="app" title="Семейный БДДС" hidden></iframe>
+
+<div class="ov" id="load"><img src="icon-192.png" alt=""><div class="spin" aria-hidden="true"></div><p>Открываю «Семейный БДДС»…</p></div>
+
+<div class="ov" id="setup" hidden>
+  <img src="icon-192.png" alt="">
+  <h1>Семейный БДДС</h1>
+  <p>Вставьте один раз ссылку на ваше приложение — ту, что заканчивается на <b>/exec</b>. Она сохранится только на этом телефоне.</p>
+  <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
+  <div class="err" id="err"></div>
+  <div class="btns"><button class="primary" id="save">Сохранить и открыть</button><button id="cancel" hidden>Отмена</button></div>
+</div>
+
+<div class="ov" id="fail" hidden>
+  <img src="icon-192.png" alt="">
+  <h1>Приложение не открылось</h1>
+  <p>Чаще всего нужно заново войти в аккаунт Google. Откройте приложение в браузере, войдите, затем вернитесь сюда и нажмите «Повторить».</p>
+  <div class="btns"><button class="primary" id="openBr">Открыть в браузере</button><button id="retry">Повторить</button></div>
+  <div class="btns"><button id="edit">Изменить ссылку</button></div>
+</div>
+
+<script>
+(function(){
+  var KEY='bdds-app-url', TIMEOUT=25000;
+  var $=function(id){return document.getElementById(id)};
+  var frame=$('app'), timer=null, ready=false;
+  function get(){try{return localStorage.getItem(KEY)||''}catch(e){return ''}}
+  function set(v){try{localStorage.setItem(KEY,v)}catch(e){}}
+  function show(id){['load','setup','fail'].forEach(function(x){$(x).hidden=(x!==id)})}
+  var valid=function(u){return /^https:\/\/script\.google\.com\/.+\/exec(\?.*)?$/.test(u)};
+
+  function open(){
+    var u=get();
+    if(!valid(u)){setup(false);return}
+    ready=false;show('load');frame.hidden=false;
+    frame.src=u;
+    clearTimeout(timer);timer=setTimeout(function(){if(!ready)show('fail')},TIMEOUT);
+  }
+  function setup(canCancel){
+    show('setup');frame.hidden=true;$('url').value=get();$('err').textContent='';$('cancel').hidden=!canCancel;
+    setTimeout(function(){$('url').focus()},50);
+  }
+  // приложение само сообщает, что запустилось (значит, вход в Google в порядке)
+  window.addEventListener('message',function(e){
+    if(e.data&&e.data.bdds==='ready'){ready=true;clearTimeout(timer);show(null)}
+  });
+  $('save').addEventListener('click',function(){
+    var u=$('url').value.trim();
+    if(!valid(u)){$('err').textContent='Нужна ссылка вида https://script.google.com/…/exec';return}
+    set(u);open();
+  });
+  $('url').addEventListener('keydown',function(e){if(e.key==='Enter')$('save').click()});
+  $('cancel').addEventListener('click',open);
+  $('retry').addEventListener('click',open);
+  $('edit').addEventListener('click',function(){setup(true)});
+  $('openBr').addEventListener('click',function(){window.open(get(),'_blank')});
+  // ссылку можно поменять, открыв эту страницу с #setup в конце адреса
+  if(location.hash==='#setup')setup(!!get());else open();
+
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
+})();
+</script>
+</body>
+</html>
