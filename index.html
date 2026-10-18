@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2f87d0">
-<title>Семейный БДДС</title>
+<title>Семейный бюджет</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://script.google.com">
 <link rel="dns-prefetch" href="https://script.googleusercontent.com">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
-/* Пусковая страница: показывает приложение «Семейный БДДС» (Google Apps Script) на весь экран.
+/* Пусковая страница: показывает приложение «Семейный бюджет» (Google Apps Script) на весь экран.
    Сама ничего не хранит, кроме ссылки на приложение — и та остаётся только на этом телефоне. */
 :root{--bg:#e9f0f7;--fg:#1d2a39;--muted:#5b6c80;--card:#fff;--line:#d3dde8;--accent:#2b8ae0}
 @media (prefers-color-scheme:dark){:root{--bg:#0f151d;--fg:#e5ecf4;--muted:#9eb0c4;--card:#161f2a;--line:#2a3848;--accent:#5aa8f0}}
@@ -36,13 +36,13 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 </style>
 </head>
 <body>
-<iframe id="app" title="Семейный БДДС" hidden></iframe>
+<iframe id="app" title="Семейный бюджет" hidden></iframe>
 
-<div class="ov" id="load"><img src="icon-192.png" alt=""><div class="spin" aria-hidden="true"></div><p>Открываю «Семейный БДДС»…</p><p class="wait" id="wait"></p></div>
+<div class="ov" id="load"><img src="icon-192.png" alt=""><div class="spin" aria-hidden="true"></div><p>Открываю «Семейный бюджет»…</p><p class="wait" id="wait"></p></div>
 
 <div class="ov" id="setup" hidden>
   <img src="icon-192.png" alt="">
-  <h1>Семейный БДДС</h1>
+  <h1>Семейный бюджет</h1>
   <p>Вставьте один раз ссылку на ваше приложение — ту, что заканчивается на <b>/exec</b>. Она сохранится только на этом телефоне. На других телефонах вводить не придётся: готовая ссылка для них будет в приложении, в «Настройках».</p>
   <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
   <div class="err" id="err"></div>
