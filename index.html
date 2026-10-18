@@ -73,7 +73,7 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 
   // убрать заставку и показать приложение
   function reveal(){
-    clearInterval(tick);if($('load').hidden)return;
+    clearTimeout(timer);clearInterval(tick);if($('load').hidden)return;
     show(null);
     // на некоторых телефонах экран не перерисовывается сам после запуска со значка — подталкиваем
     try{requestAnimationFrame(function(){document.body.style.outline='0 solid transparent';requestAnimationFrame(function(){document.body.style.outline=''})})}catch(_){}
@@ -83,13 +83,13 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
     if(!valid(u)){setup(false);return}
     ready=false;loaded=false;show('load');frame.hidden=false;$('wait').textContent='';
     t0=Date.now();frame.src=u;
-    clearTimeout(timer);timer=setTimeout(function(){if(!ready){clearInterval(tick);show('fail')}},TIMEOUT);
+    clearTimeout(timer);timer=setTimeout(function(){if(!ready&&!loaded){clearInterval(tick);show('fail')}},TIMEOUT);
     // счётчик секунд: видно, что загрузка идёт, а не зависла
     clearInterval(tick);tick=setInterval(function(){var s=Math.round((Date.now()-t0)/1000);if(s>=4)$('wait').textContent=s+' с'},1000);
   }
   // страница приложения загрузилась — убираем заставку, даже если сообщение «запустилось» ещё не пришло
   // (если вход в Google не удался, через TIMEOUT всё равно появится экран «Приложение не открылось»)
-  frame.addEventListener('load',function(){if(!frame.getAttribute('src'))return;loaded=true;setTimeout(function(){if(loaded)reveal()},800)});
+  frame.addEventListener('load',function(){if(!frame.getAttribute('src'))return;loaded=true;clearTimeout(timer);setTimeout(function(){if(loaded)reveal()},800)});
   // вернулись в приложение (после запуска со значка телефон иногда сначала сворачивает его) — проверить ещё раз
   function recheck(){if(ready||loaded)reveal()}
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')recheck()});
