@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#2f87d0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -10,125 +10,84 @@
 <meta name="apple-mobile-web-app-title" content="Семейный бюджет">
 <title>Семейный бюджет</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="preconnect" href="https://script.google.com">
-<link rel="dns-prefetch" href="https://script.googleusercontent.com">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=851">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=851">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=853">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=853">
 <style>
-/* Пусковая страница: показывает приложение «Семейный бюджет» (Google Apps Script) на весь экран.
-   Сама ничего не хранит, кроме ссылки на приложение — и та остаётся только на этом телефоне. */
 :root{--bg:#e9f0f7;--fg:#1d2a39;--muted:#5b6c80;--card:#fff;--line:#d3dde8;--accent:#2b8ae0}
 @media (prefers-color-scheme:dark){:root{--bg:#0f151d;--fg:#e5ecf4;--muted:#9eb0c4;--card:#161f2a;--line:#2a3848;--accent:#5aa8f0}}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-#app{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:var(--bg)}
-.ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;background:var(--bg)}
-.ov[hidden]{display:none}
-#load{pointer-events:none} /* заставка не перехватывает касания: если она задержалась, тап попадёт в приложение */
-.wait{font-size:13px;min-height:1.3em}
-.ov img{width:72px;height:72px;border-radius:16px}
-.ov h1{margin:0;font-size:19px}
-.ov p{margin:0;color:var(--muted);max-width:360px}
-.spin{width:22px;height:22px;border:3px solid var(--accent);border-right-color:transparent;border-radius:50%;animation:s .8s linear infinite}
-@keyframes s{to{transform:rotate(360deg)}}
-input{width:100%;max-width:420px;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg)}
-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(43,138,224,.2)}
-.btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-button{font:inherit;font-weight:700;border-radius:10px;padding:10px 16px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{min-height:100dvh;display:grid;place-items:center;padding:max(24px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
+.shell{width:min(460px,100%);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px 22px;box-shadow:0 18px 50px rgba(20,40,70,.12);text-align:center}
+.logo{width:84px;height:84px;border-radius:19px;display:block;margin:0 auto 14px}
+h1{margin:0 0 6px;font-size:24px}
+p{margin:8px 0;color:var(--muted)}
+.note{font-size:13px;line-height:1.5}
+.btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+button{font:inherit;font-weight:700;border-radius:11px;padding:11px 16px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
 button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.err{color:#c43a3a;font-weight:600;min-height:1.4em}
+input{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);margin-top:12px}
+.err{color:#c43a3a;font-weight:600;min-height:1.3em;margin-top:6px}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
-<iframe id="app" title="Семейный бюджет" hidden></iframe>
-
-<div class="ov" id="load"><img src="icon-192.png" alt=""><div class="spin" aria-hidden="true"></div><p>Открываю «Семейный бюджет»…</p><p class="wait" id="wait"></p></div>
-
-<div class="ov" id="setup" hidden>
-  <img src="icon-192.png" alt="">
+<section class="shell">
+  <img class="logo" src="apple-touch-icon.png?v=853" alt="">
   <h1>Семейный бюджет</h1>
-  <p>Вставьте один раз ссылку на ваше приложение — ту, что заканчивается на <b>/exec</b>. Она сохранится только на этом телефоне. На других телефонах вводить не придётся: готовая ссылка для них будет в приложении, в «Настройках».</p>
-  <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
-  <div class="err" id="err"></div>
-  <div class="btns"><button class="primary" id="save">Сохранить и открыть</button><button id="cancel" hidden>Отмена</button></div>
-</div>
 
-<div class="ov" id="fail" hidden>
-  <img src="icon-192.png" alt="">
-  <h1>Приложение не открылось</h1>
-  <p>Чаще всего нужно заново войти в аккаунт Google. Откройте приложение в браузере, войдите, затем вернитесь сюда и нажмите «Повторить».</p>
-  <div class="btns"><button class="primary" id="openBr">Открыть в браузере</button><button id="retry">Повторить</button></div>
-  <div class="btns"><button id="edit">Изменить ссылку</button></div>
-</div>
+  <div id="ready" hidden>
+    <p>GitHub-страница готова к запуску приложения.</p>
+    <p class="note" id="installHint">На iPhone сначала выберите <b>Поделиться → На экран «Домой»</b>. Значок будет наш. После этого запускайте приложение с этого значка.</p>
+    <div class="btns"><button class="primary" id="open">Открыть приложение</button><button id="change">Изменить ссылку</button></div>
+  </div>
+
+  <div id="setup" hidden>
+    <p>Укажите прямую ссылку Google Apps Script, которая заканчивается на <b>/exec</b>.</p>
+    <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
+    <div class="err" id="err"></div>
+    <div class="btns"><button class="primary" id="save">Сохранить</button></div>
+  </div>
+</section>
 
 <script>
 (function(){
-  var KEY='bdds-app-url', TIMEOUT=25000;
-  var IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  var KEY='bdds-app-url';
   var $=function(id){return document.getElementById(id)};
-  var frame=$('app'), timer=null, tick=null, ready=false, loaded=false, t0=0;
+  var valid=function(u){return /^https:\/\/script\.google\.com\/.+\/exec(\?.*)?$/.test(u)};
+  var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
+
   function get(){try{return localStorage.getItem(KEY)||''}catch(e){return ''}}
   function set(v){try{localStorage.setItem(KEY,v)}catch(e){}}
-  function show(id){['load','setup','fail'].forEach(function(x){$(x).hidden=(x!==id)})}
-  var valid=function(u){return /^https:\/\/script\.google\.com\/.+\/exec(\?.*)?$/.test(u)};
+  function fromHash(){
+    var m=/^#u=(.+)$/.exec(location.hash),u='';
+    if(!m)return '';
+    try{u=decodeURIComponent(m[1])}catch(e){u=m[1]}
+    return valid(u)?u:'';
+  }
+  function show(id){$('ready').hidden=id!=='ready';$('setup').hidden=id!=='setup'}
+  function launch(){
+    var u=get()||fromHash();
+    if(!valid(u)){show('setup');return}
+    set(u);
+    location.replace(u);
+  }
 
-  // убрать заставку и показать приложение
-  function reveal(){
-    clearInterval(tick);if($('load').hidden)return;
-    show(null);
-    // на некоторых телефонах экран не перерисовывается сам после запуска со значка — подталкиваем
-    try{requestAnimationFrame(function(){document.body.style.outline='0 solid transparent';requestAnimationFrame(function(){document.body.style.outline=''})})}catch(_){}
-  }
-  function open(){
-    var u=get();
-    if(!valid(u)){setup(false);return}
-    // На iPhone/iPad Google Apps Script открываем верхним документом, а не внутри GitHub iframe.
-    // Так авторизация Google остаётся first-party и Safari не блокирует её как сторонний контекст.
-    if(IOS){
-      show('load');frame.hidden=true;$('wait').textContent='Открываю напрямую…';
-      location.replace(u);
-      return
-    }
-    ready=false;loaded=false;show('load');frame.hidden=false;$('wait').textContent='';
-    t0=Date.now();frame.src=u;
-    clearTimeout(timer);timer=setTimeout(function(){if(!ready){clearInterval(tick);show('fail')}},TIMEOUT);
-    // счётчик секунд: видно, что загрузка идёт, а не зависла
-    clearInterval(tick);tick=setInterval(function(){var s=Math.round((Date.now()-t0)/1000);if(s>=4)$('wait').textContent=s+' с'},1000);
-  }
-  // страница приложения загрузилась — убираем заставку, даже если сообщение «запустилось» ещё не пришло
-  // (если вход в Google не удался, через TIMEOUT всё равно появится экран «Приложение не открылось»)
-  frame.addEventListener('load',function(){if(!frame.getAttribute('src'))return;loaded=true;setTimeout(function(){if(loaded)reveal()},800)});
-  // вернулись в приложение (после запуска со значка телефон иногда сначала сворачивает его) — проверить ещё раз
-  function recheck(){if(ready||loaded)reveal()}
-  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')recheck()});
-  window.addEventListener('pageshow',recheck);window.addEventListener('focus',recheck);
-  function setup(canCancel){
-    show('setup');frame.hidden=true;$('url').value=get();$('err').textContent='';$('cancel').hidden=!canCancel;
-    setTimeout(function(){$('url').focus()},50);
-  }
-  // приложение само сообщает, что запустилось (значит, вход в Google в порядке)
-  window.addEventListener('message',function(e){
-    if(e.data&&e.data.bdds==='ready'){ready=true;clearTimeout(timer);if($('fail').hidden)reveal();else show(null);
-      // отдать приложению готовую ссылку для других устройств (адрес приложения уже внутри)
-      try{e.source.postMessage({bdds:'launcher',link:location.origin+location.pathname+'#u='+get()},'*')}catch(_){}}
-  });
+  var hu=fromHash();if(hu)set(hu);
+  if(standalone&&valid(get())){launch();return}
+  if(valid(get()))show('ready');else show('setup');
+
+  $('open').addEventListener('click',launch);
+  $('change').addEventListener('click',function(){$('url').value=get();$('err').textContent='';show('setup');setTimeout(function(){$('url').focus()},50)});
   $('save').addEventListener('click',function(){
     var u=$('url').value.trim();
     if(!valid(u)){$('err').textContent='Нужна ссылка вида https://script.google.com/…/exec';return}
-    set(u);open();
+    set(u);show('ready')
   });
   $('url').addEventListener('keydown',function(e){if(e.key==='Enter')$('save').click()});
-  $('cancel').addEventListener('click',open);
-  $('retry').addEventListener('click',open);
-  $('edit').addEventListener('click',function(){setup(true)});
-  $('openBr').addEventListener('click',function(){window.open(get(),'_blank')});
-  // ссылка вида …/bdds/#u=https://script.google.com/…/exec сразу запоминает адрес приложения — вводить ничего не нужно
-  var m=/^#u=(.+)$/.exec(location.hash);
-  if(m){var u='';try{u=decodeURIComponent(m[1])}catch(_){u=m[1]}if(valid(u))set(u);try{history.replaceState(null,'',location.pathname+location.search)}catch(_){}}
-  // ссылку можно поменять, открыв эту страницу с #setup в конце адреса
-  if(location.hash==='#setup')setup(!!get());else open();
 
-  if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
+  if(/iPhone|iPad|iPod/.test(navigator.userAgent))$('installHint').innerHTML='На iPhone сначала выберите <b>Поделиться → На экран «Домой»</b>. Значок будет наш. После этого запускайте приложение с этого значка — GitHub откроет Google Apps Script напрямую, без iframe.';
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 })();
 </script>
 </body>
