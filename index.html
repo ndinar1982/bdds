@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2f87d0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Семейный бюджет">
 <title>Семейный бюджет</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://script.google.com">
@@ -32,11 +36,13 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(43
 .btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 button{font:inherit;font-weight:700;border-radius:10px;padding:10px 16px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
 button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.install-fab{position:fixed;z-index:30;right:12px;top:max(12px,env(safe-area-inset-top));padding:8px 12px;border-color:var(--accent);background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.18)}
 .err{color:#c43a3a;font-weight:600;min-height:1.4em}
 </style>
 </head>
 <body>
 <iframe id="app" title="Семейный бюджет" hidden></iframe>
+<button id="installApp" class="install-fab" type="button" hidden>Установить</button>
 
 <div class="ov" id="load"><img src="icon-192.png" alt=""><div class="spin" aria-hidden="true"></div><p>Открываю «Семейный бюджет»…</p><p class="wait" id="wait"></p></div>
 
@@ -62,10 +68,23 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   var KEY='bdds-app-url', TIMEOUT=25000;
   var $=function(id){return document.getElementById(id)};
   var frame=$('app'), timer=null, tick=null, ready=false, loaded=false, t0=0;
+  var installPrompt=null, installBtn=$('installApp');
   function get(){try{return localStorage.getItem(KEY)||''}catch(e){return ''}}
   function set(v){try{localStorage.setItem(KEY,v)}catch(e){}}
   function show(id){['load','setup','fail'].forEach(function(x){$(x).hidden=(x!==id)})}
   var valid=function(u){return /^https:\/\/script\.google\.com\/.+\/exec(\?.*)?$/.test(u)};
+  var standalone=function(){return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true};
+  var isiOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var isMobile=isiOS||/Android/i.test(navigator.userAgent);
+  function refreshInstall(){installBtn.hidden=standalone()||(!isMobile&&!installPrompt)}
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();installPrompt=e;refreshInstall()});
+  window.addEventListener('appinstalled',function(){installPrompt=null;installBtn.hidden=true});
+  installBtn.addEventListener('click',function(){
+    if(installPrompt){var p=installPrompt;installPrompt=null;p.prompt();p.userChoice.then(function(r){if(r&&r.outcome==='accepted')installBtn.hidden=true;else refreshInstall()}).catch(refreshInstall);return}
+    if(isiOS){alert('В Safari нажмите «Поделиться» → «На экран Домой» → включите «Открывать как веб-приложение» → «Добавить».');return}
+    alert('В Chrome откройте меню ⋮ → «Добавить на главный экран» или «Установить приложение». Если пункта нет, обновите эту страницу один раз.');
+  });
+  refreshInstall();
 
   // убрать заставку и показать приложение
   function reveal(){
@@ -116,7 +135,7 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   // ссылку можно поменять, открыв эту страницу с #setup в конце адреса
   if(location.hash==='#setup')setup(!!get());else open();
 
-  if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(function(){return navigator.serviceWorker.ready}).then(refreshInstall).catch(function(){})}
 })();
 </script>
 </body>
