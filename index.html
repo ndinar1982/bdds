@@ -101,13 +101,20 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
     setTimeout(function(){$('url').focus()},50);
   }
   // приложение само сообщает, что запустилось (значит, вход в Google в порядке)
+  function fromApp(e){
+    if(!e||!e.data)return false;
+    try{
+      var h=new URL(e.origin).hostname;
+      return h==='script.google.com'||h==='script.googleusercontent.com'||h.endsWith('.googleusercontent.com');
+    }catch(_){return false}
+  }
   window.addEventListener('message',function(e){
-    if(e.source!==frame.contentWindow||!e.data)return;
+    if(!fromApp(e))return;
     if(e.data.bdds==='ui-save'){setUi(e.data.value);return}
-    if(e.data.bdds==='ui-get'){try{e.source.postMessage({bdds:'ui-state',value:getUi()},'*')}catch(_){};return}
+    if(e.data.bdds==='ui-get'){try{e.source.postMessage({bdds:'ui-state',value:getUi()},e.origin)}catch(_){};return}
     if(e.data.bdds==='ready'){ready=true;clearTimeout(timer);if($('fail').hidden)reveal();else show(null);
       // отдать приложению готовую ссылку для других устройств (адрес приложения уже внутри)
-      try{e.source.postMessage({bdds:'launcher',link:location.origin+location.pathname+'#u='+get()},'*')}catch(_){}}
+      try{e.source.postMessage({bdds:'launcher',link:location.origin+location.pathname+'#u='+get()},e.origin)}catch(_){}}
   });
   $('save').addEventListener('click',function(){
     var u=$('url').value.trim();
