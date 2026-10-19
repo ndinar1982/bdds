@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f87d0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Семейный бюджет">
+<title>Семейный бюджет</title>
+<link rel="apple-touch-icon" sizes="180x180" href="https://ndinar1982.github.io/bdds/apple-touch-icon-180.png?v=850">
+<link rel="apple-touch-icon-precomposed" sizes="180x180" href="https://ndinar1982.github.io/bdds/apple-touch-icon-180.png?v=850">
+<link rel="icon" type="image/png" sizes="32x32" href="https://ndinar1982.github.io/bdds/favicon-32.png?v=850">
+<link rel="shortcut icon" type="image/png" href="https://ndinar1982.github.io/bdds/favicon-32.png?v=850">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+</head>
+<body>
+<style>
+/* Layout: YNAB-4 style — blue account sidebar; main = decade strip, dark summary cards per decade, spreadsheet grid (plan · fact · diff per decade) */
+:root{
+  --bg:#e9f0f7; --surface:#ffffff; --surface-2:#f5f8fc; --group:#e3edf7; --line:#d3dde8; --dot:#cbd7e4;
+  --fg:#1d2a39; --muted:#5b6c80; --faint:#98a7b8;
+  --side-a:#2f87d0; --side-b:#1c63a9; --side-fg:#ffffff; --side-muted:#cfe3f6; --side-hover:rgba(255,255,255,.13); --side-sel:rgba(8,40,80,.35);
+  --card:#394250; --card-fg:#eef2f6; --card-muted:#aab5c3; --card-good:#9ad45b; --card-bad:#ff8e8e; --card-line:#4a5463;
+  --strip:#d7e2ee; --seg:#f7fafd; --seg-fg:#3f5068; --seg-past:#8c9bb0; --seg-on:#2b8ae0; --seg-on-fg:#ffffff; --now:#f3c33b;
+  --accent:#2b8ae0; --accent-soft:#d3e7fb;
+  --good:#1e8750; --good-bg:#dbf1e3; --bad:#c43a3a; --bad-bg:#fbdcdc; --warn-bg:#fff0c4; --warn:#855d00;
+  --plan:#2d6ccf; --dep:#1f5fd0; --c-sav:#8a57d6; --c-debt:#d0841a; --sel:#2b8ae0; --sel-bg:rgba(43,138,224,.13);
+  --font:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#161f2a; --surface-2:#1a2431; --group:#1e2b3a; --line:#2a3848; --dot:#2d3c4d;
+  --fg:#e5ecf4; --muted:#9eb0c4; --faint:#647589;
+  --side-a:#173d66; --side-b:#10294a; --side-fg:#eaf2fb; --side-muted:#9fbbd8; --side-hover:rgba(255,255,255,.08); --side-sel:rgba(0,0,0,.3);
+  --card:#222b37; --card-fg:#e8edf3; --card-muted:#98a5b5; --card-good:#9ad45b; --card-bad:#ff8e8e; --card-line:#323d4b;
+  --strip:#18222e; --seg:#202c3a; --seg-fg:#c1cfdf; --seg-past:#6e8096; --seg-on:#2b7fd0; --seg-on-fg:#ffffff; --now:#f3c33b;
+  --accent:#5aa8f0; --accent-soft:#1b3957;
+  --good:#5fd395; --good-bg:#173f2b; --bad:#ff8a8a; --bad-bg:#4a2027; --warn-bg:#4a3a10; --warn:#ffd36b;
+  --plan:#8fb5ff; --dep:#7fb0ff; --c-sav:#b99cff; --c-debt:#f0b45a; --sel:#5aa8f0; --sel-bg:rgba(90,168,240,.18); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#161f2a; --surface-2:#1a2431; --group:#1e2b3a; --line:#2a3848; --dot:#2d3c4d;
+  --fg:#e5ecf4; --muted:#9eb0c4; --faint:#647589;
+  --side-a:#173d66; --side-b:#10294a; --side-fg:#eaf2fb; --side-muted:#9fbbd8; --side-hover:rgba(255,255,255,.08); --side-sel:rgba(0,0,0,.3);
+  --card:#222b37; --card-fg:#e8edf3; --card-muted:#98a5b5; --card-good:#9ad45b; --card-bad:#ff8e8e; --card-line:#323d4b;
+  --strip:#18222e; --seg:#202c3a; --seg-fg:#c1cfdf; --seg-past:#6e8096; --seg-on:#2b7fd0; --seg-on-fg:#ffffff; --now:#f3c33b;
+  --accent:#5aa8f0; --accent-soft:#1b3957;
+  --good:#5fd395; --good-bg:#173f2b; --bad:#ff8a8a; --bad-bg:#4a2027; --warn-bg:#4a3a10; --warn:#ffd36b;
+  --plan:#8fb5ff; --dep:#7fb0ff; --c-sav:#b99cff; --c-debt:#f0b45a; --sel:#5aa8f0; --sel-bg:rgba(90,168,240,.18); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100%}
+/* sidebar */
+.side{background:linear-gradient(180deg,var(--side-a),var(--side-b));color:var(--side-fg);padding:14px 10px 20px;display:flex;flex-direction:column;gap:14px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px}
+.brand-mark{width:30px;height:30px;flex:none;display:grid;place-items:center;filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))}
+.brand b{display:block;font-size:15px}
+.brand small{color:var(--side-muted);font-size:11.5px}
+.nav{display:flex;flex-direction:column;gap:2px;background:var(--side-sel);border-radius:10px;padding:4px}
+.nav button{background:none;border:0;text-align:left;padding:9px 10px;border-radius:7px;color:var(--side-fg);font-weight:700;display:flex;align-items:center;gap:10px}
+.nav button:hover{background:var(--side-hover)}
+.nav button[aria-current="page"]{background:rgba(255,255,255,.2)}
+.nav svg{width:17px;height:17px;flex:none}
+/* вкладки можно переставлять: перетащить мышью, на телефоне — нажать и подержать */
+.nav{touch-action:none}.nav button{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.nav button.nav-drag{opacity:.5}.nav.nav-dragging,.nav.nav-dragging button{cursor:grabbing}
+.nav button.drop-before{box-shadow:inset 0 3px 0 rgba(255,255,255,.95)}.nav button.drop-after{box-shadow:inset 0 -3px 0 rgba(255,255,255,.95)}
+.total-box{padding:0 10px}
+.total-box small{display:block;font-weight:500;color:var(--side-muted);font-size:11.5px;margin-top:1px}
+.accts{display:flex;flex-direction:column;gap:10px}
+.acct-group{background:var(--side-sel);border-radius:10px;padding:6px 4px}
+.fact-line{display:flex;align-items:center;justify-content:space-between;gap:8px}.side-sync{border:0;background:var(--side-sel);color:var(--side-fg);width:26px;height:26px;border-radius:50%;font-size:15px;line-height:1;cursor:pointer;flex:none}.side-sync:hover{background:var(--side-hover)}.side-sync.spinning{animation:spin 1s linear infinite;cursor:default}
+.nav-dot{width:16px;height:16px;border-radius:50%;background:#ff5a6c;margin-left:auto;flex:none;display:inline-flex;align-items:center;justify-content:center}.nav-dot::after{content:'!';color:#fff;font-size:11px;font-weight:900;line-height:1}.nav-dot[hidden]{display:none}
+.acct.warn{background:rgba(255,77,94,.22);box-shadow:inset 3px 0 0 #ff5a6c}
+.warn-ico{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#ff5a6c;color:#fff;font-style:normal;font-size:10.5px;font-weight:900;margin-right:6px;vertical-align:1px;line-height:1}
+.acct-sep .warn-ico,.acct-group h4 .warn-ico{margin:0 0 0 7px}
+.acct-group h4[data-col],.acct-sep[data-col]{cursor:pointer;user-select:none}
+.acct-group h4[data-col]>span:first-child::before,.acct-sep[data-col]>span:first-child::before{content:'▾';display:inline-block;width:12px;font-style:normal;opacity:.75;transition:transform .15s}
+.acct-group.col h4>span:first-child::before,.acct-sec.col .acct-sep>span:first-child::before{transform:rotate(-90deg)}
+.acct-group.col .acct{display:none}.acct-group.col h4{margin:0}.acct-sec.col>.acct-body{display:none}
+#accts.dragmode .acct-sec.col>.acct-body{display:block}
+.alert-box{position:fixed;bottom:24px;left:calc(50% + 140px);transform:translateX(-50%);z-index:45;width:min(560px,calc(100vw - 320px));background:#ffe3e7;color:#b3132b;border:1px solid #f6aab6;border-radius:14px;padding:12px 40px 10px 16px;box-shadow:0 12px 30px rgba(120,20,40,.22);font-size:13.5px;line-height:1.45}
+.alert-box[hidden]{display:none}
+body:has(.savebar.dirty) .alert-box{display:none} /* окно проблем не должно закрывать кнопку «Сохранить изменения» */
+.alert-box b{display:block;font-size:14px;margin-bottom:4px}.alert-box ul{margin:0;padding:0;list-style:none}.alert-box li{margin:3px 0;padding-left:14px;position:relative}.alert-box li::before{content:'•';position:absolute;left:2px;top:0}
+.alert-box .ab-go{background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}.alert-box .ab-go:hover{text-decoration:underline}
+.alert-box small{display:block;margin-top:6px;opacity:.75;font-size:11.5px}.alert-box .ab-x{position:absolute;top:6px;right:8px;width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:#b3132b;font-size:20px;line-height:1;cursor:pointer}.alert-box .ab-x:hover{background:rgba(179,19,43,.1)}
+.acct[draggable]{cursor:grab}.acct.dragging{opacity:.45}.acct.drop-before{box-shadow:inset 0 2px 0 #fff}.acct.drop-after{box-shadow:inset 0 -2px 0 #fff}
+.acct-sec{border-radius:10px;transition:background .12s}.acct-sec.drop-in{background:rgba(255,255,255,.14);outline:2px dashed rgba(255,255,255,.55);outline-offset:2px}
+.acct-empty{margin:2px 8px 6px;padding:8px;border:1px dashed rgba(255,255,255,.35);border-radius:8px;font-size:11.5px;color:var(--side-muted);text-align:center;display:none}#accts.dragmode .acct-empty{display:block}.acct-sec.empty{display:none}#accts.dragmode .acct-sec.empty{display:block}
+.dh{display:inline-block;width:12px;margin:0 0 0 -12px;cursor:grab;color:var(--faint);opacity:0;font-size:12px;line-height:1;vertical-align:middle;user-select:none}
+tr.g .dh{margin-left:-2px;margin-right:2px}tr:hover>td.sc .dh{opacity:1}.dh:active{cursor:grabbing}
+table.bg tbody tr.drop-before>td{box-shadow:inset 0 2px 0 var(--accent)}table.bg tbody tr.drop-after>td{box-shadow:inset 0 -2px 0 var(--accent)}table.bg tbody tr.dragging>td{opacity:.5}
+.acct-sep{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:10px 8px 4px;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--side-muted)}.accts>.acct-sep:first-child{margin-top:2px}.acct-sep span:last-child{font-size:13px;letter-spacing:0;color:var(--side-fg)}.acct-sep span.neg{color:#ffd0d0}
+.acct-group h4{margin:0 0 2px;padding:3px 8px;font-size:12.5px;font-style:italic;font-weight:700;display:flex;justify-content:space-between;gap:8px}
+.acct{display:flex;justify-content:space-between;gap:8px;padding:4px 8px 4px 18px;border-radius:6px;font-size:13px}
+.acct span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct .v{font-weight:600}
+.acct .acct-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.acct.credit-line{align-items:flex-start}.credit-v{border:0;background:none;color:inherit;padding:0;text-align:right;font:inherit;line-height:1.1;cursor:pointer;min-width:82px}.credit-v b{display:block;font-weight:700;white-space:nowrap}.credit-v small{display:block;color:var(--side-muted);font-size:10.5px;font-weight:500;line-height:1.2;margin-top:2px;white-space:nowrap}.credit-v.neg b{color:#ffd0d0}
+.v.neg{color:#ffd0d0}
+.side-foot{margin-top:auto;padding:0 10px;color:var(--side-muted);font-size:12px;line-height:1.45}
+@media (min-width:761px) and (min-height:501px){
+  .side{padding:10px 8px 12px;gap:8px}
+  .brand{padding:2px 6px}
+  .nav{padding:3px;gap:1px}
+  .nav button{padding:7px 9px}
+  .accts{gap:6px}
+  .acct-group{padding:4px 3px}
+  .acct-group h4{padding:2px 7px}
+  .acct{padding:3px 7px 3px 17px}
+  .acct-sep{margin:6px 7px 3px}
+  .side-foot{padding:0 8px}
+}
+.sync{display:inline-flex;align-items:center;gap:6px}
+.dot{width:7px;height:7px;border-radius:50%;background:#f0b429}
+.dot.on{background:#4cd98a}
+/* main */
+.main{min-width:0;padding-block:14px 32px;padding-inline:18px}
+/* decade strip */
+.strip{display:flex;gap:4px;background:var(--strip);border-radius:10px;padding:4px;margin-bottom:10px;overflow:hidden}
+.sarrow{flex:none;width:32px;border:0;background:var(--seg);border-radius:7px;display:grid;place-items:center;color:var(--seg-fg)}
+.sarrow:disabled{opacity:.4;cursor:default}
+.months{display:flex;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;cursor:grab;touch-action:pan-x}.months::-webkit-scrollbar{display:none}.months.dragging{cursor:grabbing}.months.dragging .seg{cursor:grabbing}.seg.vis{cursor:grab}
+.stoday{width:auto!important;padding:0 10px!important;font-size:12px;font-weight:800;white-space:nowrap}
+.mo{display:flex;flex-direction:column;gap:2px;flex:1 0 auto}
+.mo-l{font-size:11px;font-weight:800;text-align:center;color:var(--muted);letter-spacing:.03em;white-space:nowrap}
+.segs{display:flex;gap:2px}
+.seg.wide{flex:1 0 40px}
+.seg{flex:1 0 22px;height:24px;border:0;background:var(--seg);color:var(--seg-fg);font-weight:700;font-size:11.5px;border-radius:5px;position:relative;padding:0 4px}
+.seg.past{color:var(--seg-past)}
+.seg.vis{background:var(--seg-on);color:var(--seg-on-fg)}
+.seg.now::before{content:"";position:absolute;left:0;top:0;border-style:solid;border-width:9px 9px 0 0;border-color:var(--now) transparent transparent transparent;border-top-left-radius:4px}
+.seg:hover:not(.vis){background:var(--accent-soft)}
+/* grid */
+.tw{overflow:auto;max-height:calc(100vh - 104px);padding-bottom:var(--alerth,0px);border-radius:var(--r);background:var(--bg);outline:none;overscroll-behavior:contain}
+.tw:focus-visible{box-shadow:0 0 0 2px var(--accent)}
+table.bg{border-collapse:separate;border-spacing:0;table-layout:fixed;width:max-content}
+table.bg th,table.bg td{padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+table.bg thead th{position:sticky;background:var(--bg);z-index:2;font-weight:600}
+table.bg thead tr.cards th{top:0;height:166px;padding:0 0 6px;vertical-align:bottom}
+table.bg thead tr.colh th{top:166px;height:40px;background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:11px;color:var(--muted);text-align:right;line-height:1.2;text-transform:uppercase;letter-spacing:.05em}
+table.bg thead tr.colh th.on{color:var(--fg)}
+table.bg thead tr.colh th small{display:block;overflow:hidden;text-overflow:clip;text-transform:none;letter-spacing:0;font-size:10.5px;font-weight:700;color:var(--good)}
+table.bg thead tr.colh th.on.mp small{color:var(--plan)}
+table.bg .sc{position:sticky;left:0;z-index:1}
+table.bg thead th.sc{z-index:3;text-align:left}
+table.bg tr.colh th.sc{border-left:1px solid var(--line);border-top-left-radius:var(--r)}
+table.bg tr.colh th.last{border-right:1px solid var(--line);border-top-right-radius:var(--r)}
+.blk{border-left:8px solid var(--bg)}
+table.bg tbody td{height:26px;background:var(--surface);border-bottom:1px dotted var(--dot);text-align:right}
+table.bg tbody td.sc{text-align:left;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+table.bg tbody td.last{border-right:1px solid var(--line)}
+table.bg tbody tr.g td{background:var(--group);font-weight:700;border-bottom:1px solid var(--line)}
+table.bg tbody tr.i td.sc{padding-left:26px;font-weight:500}
+table.bg tbody tr.i td.sc small{color:var(--faint);font-size:11px;margin-left:6px}
+table.bg tbody tr.b td{background:var(--surface-2);font-size:12.5px;border-bottom:1px solid var(--line)}
+table.bg tbody tr.b td.sc{padding-left:26px;color:var(--muted);font-style:italic}
+table.bg tbody tr:last-child td{border-bottom:1px solid var(--line)}
+table.bg.monthly thead tr.cards th{height:166px}table.bg.monthly thead tr.colh th{top:166px}
+.gbtn{border:0;background:none;padding:0;font-weight:700;display:inline-flex;align-items:center;gap:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.gbtn svg{width:10px;height:10px;flex:none;transition:transform .15s}
+.gbtn svg.ticon,.gbtn[aria-expanded="false"] svg.ticon{width:16px;height:16px;transform:none;color:var(--accent);margin-right:-1px}
+.ticon{width:15px;height:15px;flex:none;vertical-align:-3px;margin-right:6px}
+.acct-group h4 .ticon{opacity:.9;font-style:normal}
+h3 .ticon.ti-set{width:17px;height:17px;vertical-align:-3px;margin-right:7px;color:var(--accent)}
+.gbtn[aria-expanded="false"] svg{transform:rotate(-90deg)}
+td.cell{cursor:cell;user-select:none}
+td.cell.fact-ro,td.cell.dev-ro{cursor:pointer}
+td.cell.k-inc,td.k-inc{color:var(--good)}
+td.cell.k-exp,td.cell.k-wd,td.k-exp{color:var(--bad)}
+td.cell.k-dep,td.k-dep{color:var(--dep)}
+td.cell.off{opacity:.5}
+.gtag{font-weight:600;font-size:11px;color:var(--muted);margin-left:2px}
+.legend-k{display:inline-flex;gap:12px;flex-wrap:wrap}
+.legend-k b.i{color:var(--good)} .legend-k b.d{color:var(--dep)} .legend-k b.e{color:var(--bad)}
+/* settings: items */
+.it-sec{margin-top:14px}
+.it-sec h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+details.it-sec>summary{margin-bottom:0}details.it-sec[open]>summary{margin-bottom:8px}details.it-sec>summary .ticon{width:17px;height:17px;color:var(--accent)}.it-sub{margin:0 0 8px}
+.it-row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dotted var(--dot)}
+.it-row input[type=text],.it-row input:not([type]){border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:7px;padding:7px 9px;font:inherit;min-width:0;width:100%}
+.it-hist{grid-column:1/-1;display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;padding:0 0 3px}.it-hist small{color:var(--muted);font-size:11.5px}.it-hist button{padding:5px 9px;font-size:11.5px}.it-hist .hist-last{font-weight:600;color:var(--fg)}.it-lim-edit{grid-column:1/-1;display:flex;align-items:end;gap:8px;flex-wrap:wrap;padding:7px 8px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px}.it-lim-edit[hidden]{display:none}.it-lim-edit label{display:flex;flex-direction:column;gap:3px;color:var(--muted);font-size:11.5px}.it-lim-edit input{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:7px;padding:7px 9px;font:inherit;font-size:16px}.it-lim-edit .it-date-ru{font-size:11px;color:var(--faint)}.it-history{grid-column:1/-1;width:100%;margin-top:2px}.it-history>summary{cursor:pointer;color:var(--muted);font-size:11.5px;font-weight:600}.it-history-list{margin-top:5px;border-top:1px dotted var(--dot)}.it-history-row{display:grid;grid-template-columns:94px 1fr auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px dotted var(--dot);font-size:11.5px}.it-history-row .hd{color:var(--muted)}.it-history-row .hv{color:var(--fg);font-weight:600}.it-history-row .it-hist-del{border:0;background:none;color:var(--bad);padding:3px 5px;font-weight:600;font-size:11.5px}
+.it-row input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.it-row label.chk{display:inline-flex;gap:5px;align-items:center;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.it-row .it-del{border:0;background:none;color:var(--bad);font-weight:600;font-size:12.5px;padding:4px 6px}
+.it-row .it-del:disabled{visibility:hidden}
+.it-row .ph{font-size:11px;color:var(--faint)}
+.it-row.it-head{padding:0;border:0}
+.addbtn{margin-top:8px;border:1px dashed var(--line);background:none;border-radius:8px;padding:6px 12px;font-weight:600;font-size:13px;color:var(--accent)}
+.addbtn:hover{border-color:var(--accent)}
+.savebar{display:none}.savebar.dirty{display:flex}
+.savebar{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:5;gap:10px;flex-wrap:wrap;margin-top:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 6px 20px rgba(20,40,70,.12)}
+.savebar .sb-note{display:none;align-self:center;font-weight:700;color:var(--fg);margin-right:auto}
+.savebar.dirty{position:fixed;left:304px;right:24px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;border-color:var(--accent);box-shadow:0 10px 30px rgba(20,40,70,.25)}.savebar.dirty .sb-note{display:block}
+.it-row .chks{display:flex;flex-direction:column;gap:2px}
+.savebar .ghost{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:600}
+td.cell.sel{box-shadow:inset 0 0 0 1px var(--sel)}
+td.cell.act{box-shadow:inset 0 0 0 2px var(--sel)}
+td.cell.sel.act{box-shadow:inset 0 0 0 2px var(--sel)}
+td.cell.editing{padding:0 2px;box-shadow:inset 0 0 0 2px var(--sel)}
+td.cell input{width:100%;height:23px;border:0;background:var(--surface);font:inherit;font-variant-numeric:tabular-nums;text-align:right;color:var(--fg);outline:none;padding:0 6px}
+td.d{color:var(--muted);font-size:12.5px}
+table.bg tbody tr.ro td.ro{opacity:.85;background:var(--surface-2)}
+table.bg tbody tr.g.tot td{background:var(--surface);border-bottom:2px solid var(--line)}
+.dp{display:inline-block;border-radius:999px;padding:1px 7px;font-weight:700}
+.dp.bad{background:var(--bad-bg);color:var(--bad)}
+.dp.good{background:var(--good-bg);color:var(--good)}
+.bal{display:inline-block;padding:1px 9px;border-radius:999px;font-weight:700;background:var(--good-bg);color:var(--good);font-style:normal}
+.bal.neg{background:var(--bad-bg);color:var(--bad)}
+table.bg td .bal,table.bg td .dp{font-size:12px;padding:1px 6px}
+table.bg td.d,table.bg tr.g td{text-overflow:clip}
+.bal.zero{background:transparent;color:var(--muted)}
+.avail{color:var(--muted);font-size:11.5px;margin-right:8px;font-style:normal}
+/* decade cards */
+.dcard{height:140px;margin:0 0 0 0;background:var(--card);color:var(--card-fg);border-radius:8px;padding:9px 11px 8px;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:1fr auto auto;column-gap:10px;text-align:left;position:relative;overflow:hidden;font-weight:500}
+.dcard.now::before{content:"";position:absolute;left:0;top:0;border-style:solid;border-width:16px 16px 0 0;border-color:var(--now) transparent transparent transparent}
+.dc-date b{display:block;font-size:19px;font-weight:800;letter-spacing:.01em;line-height:1.1}
+.dc-date span{display:block;font-size:10.5px;color:var(--card-muted);text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
+.cpy-plan{display:block;margin-top:6px;border:1px solid var(--card-line);background:transparent;color:var(--card-muted);font:inherit;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;cursor:pointer;white-space:nowrap}.cpy-plan:hover{color:var(--card-fg);border-color:var(--card-fg)}
+.dc-date i{display:inline-block;margin-top:6px;font-style:normal;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--card-line);color:var(--card-fg)}
+.dc-lines{font-size:11px;color:var(--card-muted);line-height:1.45;text-align:right;min-width:0}
+.dc-lines div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dc-lines b{color:var(--card-fg);font-weight:700;margin-right:5px}
+.dc-big{grid-column:1/-1;border-top:1px solid var(--card-line);padding-top:4px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.dc-big .n{font-size:20px;font-weight:800;color:var(--card-good);white-space:nowrap}
+.dcard.neg .dc-big .n{color:var(--card-bad)}
+.dc-net{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-top:2px}
+.dc-net small{font-size:10.5px;color:var(--card-muted)}
+.dc-net small,.dc-big small{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dc-net b,.dc-big .n{flex:none}
+.dc-net b{font-size:13px;font-weight:800;color:var(--card-fg)}
+.dc-net b.bad{color:var(--card-bad)} .dc-net b.good{color:var(--card-good)}
+.dcard.mc{height:158px}
+.dcard.mc .dc-lines{line-height:1.38}.dc-lines .info,.dc-lines .info b{color:var(--card-muted);font-weight:500}
+.dc-big small{font-size:10.5px;color:var(--card-muted)}
+.hint{color:var(--muted);font-size:12.5px;margin:10px 2px 0;line-height:1.55}
+kbd{font-family:inherit;font-size:11px;font-weight:700;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;background:var(--surface)}
+/* other views */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;margin-bottom:14px}
+.top h1{margin:0;font-size:21px;font-weight:800}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card h2{margin:0 0 4px;font-size:16px}
+.card p.sub{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.45}
+.chart svg{width:100%;height:auto;display:block}
+.fc-chart{display:flex;align-items:flex-start}
+.chart .fc-chart svg{display:block;flex:none}
+.fc-plot{flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;cursor:grab;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:var(--line) transparent;padding-bottom:4px}
+.fc-plot.dragging{cursor:grabbing;user-select:none}
+.fc-plot::-webkit-scrollbar{height:6px}.fc-plot::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.fc-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.fc-head h2{margin:0}.fc-zoom{display:flex;align-items:center;gap:6px}.fc-zoom span{min-width:54px;text-align:center;color:var(--muted);font-size:12.5px;font-weight:700}.fc-zoom button{min-width:34px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.lg{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;font:inherit;font-size:12.5px;color:var(--fg);display:inline-flex;align-items:center}
+.lg.off{opacity:.45;text-decoration:line-through}
+.lg:hover{border-color:var(--accent)}
+.lg-hint{font-size:11.5px;color:var(--faint);align-self:center}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.scroll{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table.plain{border-collapse:collapse;width:max-content;min-width:100%;font-size:13px}
+table.plain th,table.plain td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+table.plain th{font-size:11.5px;color:var(--muted);font-weight:700;background:var(--surface-2)}
+table.plain th:first-child,table.plain td:first-child{text-align:left;position:sticky;left:0;background:var(--surface);font-weight:600}
+table.plain th:first-child{background:var(--surface-2)}
+table.plain td.neg{background:var(--bad-bg);color:var(--bad);font-weight:600}
+table.plain td.pos{background:var(--good-bg);color:var(--good);font-weight:600}
+table.plain .cur{box-shadow:inset 0 3px 0 var(--accent)}
+table.plain th button{border:0;background:none;padding:0;font-weight:700;font-size:inherit}
+table.plain th button:hover{color:var(--accent)}
+.fc-account-head{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:140px}
+table.plain th .fc-today{margin-left:auto;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:3px 8px;font-size:11px;font-weight:800;line-height:1.2;cursor:pointer;white-space:nowrap}
+table.plain th .fc-today:hover{background:var(--accent);color:#fff;text-decoration:none}
+table.plain tr.total td{font-weight:800}
+.mode-f{color:var(--good)} .mode-p{color:var(--plan)}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12.5px;color:var(--muted);font-weight:600}
+.field input{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:9px 10px;font:inherit;font-variant-numeric:tabular-nums}
+.field input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.row-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.field select,.zmap select{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:8px 9px;font:inherit;max-width:100%}
+.zmap{width:100%;border-collapse:collapse;font-size:13.5px}.zmap td,.zmap th{padding:6px 8px;border-bottom:1px dotted var(--dot);vertical-align:middle;text-align:left}.zmap td:last-child{width:46%}.zmap td small{display:block;color:var(--muted);font-size:11.5px;margin-top:1px}.zmap select{width:100%}
+.zprev td:nth-child(2),.zprev td:nth-child(3),.zprev th:nth-child(2),.zprev th:nth-child(3){text-align:right;width:auto}.zprev th{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.zprev tr.zdec td{background:var(--group);font-weight:700}.zrec td:nth-child(4),.zrec th:nth-child(4){text-align:right}
+.zen-h{margin:18px 0 6px;font-size:14px}
+.lnk-in{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);border-radius:8px;padding:8px 10px;font:inherit;font-size:13px}
+.zen-step{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}.zen-step-h{font-weight:800;font-size:14px}
+.zen-recalc{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}.zen-recalc .sub{margin:4px 0 10px}.zen-recalc-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}.zen-recalc-row .field{flex:1 1 260px}.zen-recalc-row .field select{width:100%}.zen-recalc-row button{flex:none}
+.zen-reset{margin-left:auto}
+.zen-help{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:12.5px;line-height:1.5}.zen-warn{color:#a15c00;font-weight:600;margin:8px 0 0}
+.zen-result{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--good-bg);color:var(--fg)}.zen-result details{margin-top:6px}.zen-result summary{cursor:pointer;color:var(--accent);font-weight:600}
+details.zsetup{margin-top:14px}
+details.zsec>summary{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:10px;padding:8px 12px;margin-left:-4px;margin-right:-4px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);transition:background .12s,border-color .12s}details.zsec>summary:hover{background:var(--group);border-color:var(--accent)}details.zsec>summary::-webkit-details-marker{display:none}details.zsec>summary::before{content:'';flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M4 2.5 7.5 6 4 9.5' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat;transition:transform .15s}details.zsec[open]>summary::before{transform:rotate(90deg)}details.zsec>summary::after{content:'развернуть';margin-left:auto;font-size:12px;font-weight:600;color:var(--accent)}details.zsec[open]>summary::after{content:'свернуть'}details.zsec[open]>summary{margin-bottom:8px}details.zsec>summary small{font-weight:500;color:var(--muted);font-size:12px}
+.zcreate{display:block;margin-top:6px;font-size:12.5px}.zen-auto{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:13.5px}.zen-auto small{color:var(--muted);font-size:12px}.zen-auto input{margin-top:3px}.zen-stale{color:#ffd28a;font-weight:700}.zen-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.zen-dim{color:var(--faint)}.zen-busy{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:10px;background:var(--fg);color:var(--surface);padding:11px 18px;border-radius:999px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.25);white-space:nowrap}.zen-busy small{font-weight:500;opacity:.7}.spin{width:16px;height:16px;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}#zenBox.busy button,#zenBox.busy select{opacity:.55;pointer-events:none}.zen-err{color:var(--bad);font-weight:600}.zen-notes{margin:10px 0 0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.5}
+.ghost.sm,.card .ghost{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-weight:600;color:var(--fg)}
+.primary{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-weight:700}
+.notice{background:var(--warn-bg);color:var(--warn);border-radius:var(--r);padding:11px 14px;margin-bottom:12px;font-weight:600;line-height:1.45}
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:9px 14px;border-radius:8px;font-weight:600;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10}
+.toast.show{opacity:1}
+/* индикатор расходов: факт против равномерного дневного темпа месячного плана */
+:root{--pf-ok:rgba(47,168,102,.17);--pf-warn:rgba(227,160,8,.24);--pf-bad:rgba(214,69,69,.20);--pf-tick:rgba(29,42,57,.5);
+  --pfc-ok:rgba(110,220,150,.16);--pfc-warn:rgba(255,196,40,.20);--pfc-bad:rgba(255,110,110,.20);--pfc-tick:rgba(255,255,255,.35)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pf-ok:rgba(95,211,149,.16);--pf-warn:rgba(255,196,40,.18);--pf-bad:rgba(255,120,120,.18);--pf-tick:rgba(229,236,244,.5)}}
+:root[data-theme="dark"]{--pf-ok:rgba(95,211,149,.16);--pf-warn:rgba(255,196,40,.18);--pf-bad:rgba(255,120,120,.18);--pf-tick:rgba(229,236,244,.5)}
+.pace-legend{display:block;margin-top:6px}.pl{display:inline-block;width:18px;height:11px;border-radius:3px;vertical-align:-1px;margin:0 5px 0 8px;border:1px solid var(--line)}.pl.ok{background:var(--pf-ok)}.pl.warn{background:var(--pf-warn)}.pl.bad{background:var(--pf-bad)}
+.pl-tick{display:inline-block;width:2px;height:12px;background:var(--pf-tick);vertical-align:-2px;margin:0 5px 0 8px}
+/* операции из Дзен-мани: панель по ячейке и таблица по счёту */
+td.opsc{cursor:pointer}
+.acct[data-open]{cursor:pointer}.acct[data-open]:hover{background:var(--side-hover)}.acct.sel{background:rgba(255,255,255,.22)}
+.opsp{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);z-index:60;background:var(--surface);border-left:1px solid var(--line);box-shadow:-12px 0 30px rgba(20,40,70,.18);display:flex;flex-direction:column}
+.opsp[hidden],.opsp-bd[hidden]{display:none}
+.opsp-bd{position:fixed;inset:0;z-index:55;background:rgba(10,20,35,.35)}
+.opsp-h{display:flex;align-items:flex-start;gap:10px;padding:14px 12px 10px 16px;border-bottom:1px solid var(--line)}
+.opsp-h>div{flex:1;min-width:0}.opsp-h b{display:block;font-size:16px;line-height:1.3}.opsp-h small{color:var(--muted);font-size:12.5px}
+.opsp-x{border:0;background:none;font-size:24px;line-height:1;width:34px;height:34px;border-radius:50%;color:var(--muted);flex:none}.opsp-x:hover{background:var(--group)}
+.opsp-kpi{display:flex;gap:6px 16px;align-items:center;flex-wrap:wrap;padding:8px 16px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}.opsp-kpi b{color:var(--fg);margin-left:4px}.opsp-kpi .ghost{margin-left:auto}
+.opsp-b{flex:1;overflow:auto;padding:2px 0 16px;overscroll-behavior:contain}
+.opsp-list .op{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:8px 16px;border-bottom:1px dotted var(--dot)}
+.op-d{color:var(--muted);font-size:12.5px}
+.op-t b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.op-t small{display:block;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.op-v{font-weight:700;white-space:nowrap}.op-v.neg{color:var(--bad)}.op-v.pos{color:var(--good)}.opsp-tot b.neg{color:var(--bad)}.opsp-tot b.pos{color:var(--good)}
+.opsp-tot{display:flex;justify-content:space-between;gap:10px;padding:10px 16px;font-weight:700}
+.opsp-msg{padding:16px;color:var(--muted);margin:0;display:flex;gap:10px;align-items:center;line-height:1.45}
+.opsp-ok{margin:0 16px;color:var(--good);font-weight:600;font-size:13px}
+.opsp-warn{margin:0 16px;color:#a15c00;font-size:13px;line-height:1.45}
+.opsp-note{margin:12px 16px 0;color:var(--faint);font-size:12px;line-height:1.45}
+.opsp-side{margin-top:14px;border-top:1px solid var(--line);color:var(--muted)}.opsp-side .op-t b,.opsp-side .op-v,.opsp-side .opsp-tot{color:var(--muted);font-weight:600}
+.opsp-sh{margin:0;padding:10px 16px 2px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--faint)}
+.opsp-sn{margin:4px 16px 0;font-size:12.5px;line-height:1.45}
+.acct-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}.acct-top h1{margin:0;font-size:21px;font-weight:800;display:flex;align-items:center}
+.acct-top h1 .ticon{width:20px;height:20px;color:var(--accent);margin-right:8px}
+.acct-bal{display:flex;gap:6px 24px;flex-wrap:wrap;color:var(--muted);font-size:13.5px;margin-bottom:12px}.acct-bal b{color:var(--fg);margin-left:4px}.acct-bal b.neg{color:var(--bad)}.acct-bal .dp{font-style:normal;margin-left:6px;font-size:12px}
+.acct-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:5px 12px;font-weight:600;font-size:13px}.chip:hover{border-color:var(--accent)}.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.acct-sum{margin-left:auto;color:var(--muted);font-size:13px}.acct-sum b.pos{color:var(--good)}.acct-sum b.neg{color:var(--bad)}
+.acct-filter{display:grid;grid-template-columns:minmax(220px,1fr) minmax(180px,260px);gap:8px;margin-bottom:10px}.acct-filter input,.acct-filter select{width:100%;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:8px 10px;font:inherit}.acct-filter input:focus,.acct-filter select:focus{border-color:var(--accent);outline:2px solid var(--accent-soft);outline-offset:0}
+.ops-all-filter{display:grid;grid-template-columns:minmax(260px,1.6fr) repeat(3,minmax(140px,1fr)) auto;gap:8px;margin:0 0 10px}.ops-all-filter input,.ops-all-filter select{width:100%;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:8px 10px;font:inherit}.ops-all-filter input:focus,.ops-all-filter select:focus{border-color:var(--accent);outline:2px solid var(--accent-soft);outline-offset:0}.ops-all-filter .ops-reset{white-space:nowrap}.ops-presets{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-2px 0 10px}.ops-presets select{min-width:240px;max-width:380px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:7px 10px;font:inherit}.ops-presets select:focus{border-color:var(--accent);outline:2px solid var(--accent-soft);outline-offset:0}.ops-presets .ghost{white-space:nowrap}.ops-all-summary{display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap;margin:0 0 8px;color:var(--muted);font-size:13px}.ops-all-summary b.pos{color:var(--good)}.ops-all-summary b.neg{color:var(--bad)}.ops-t small.acct-m{display:none}
+table.plain.ops-all-t th.op-acct,table.plain.ops-all-t td.op-acct{width:20%;white-space:normal;overflow-wrap:anywhere}table.plain.ops-all-t th.op-cat,table.plain.ops-all-t td.op-cat{width:23%}table.plain.ops-all-t .num{width:155px}
+.ops-wrap{margin-top:0;max-width:100%}
+/* Таблица операций должна помещаться в рабочую область на компьютере: длинные названия переносятся, суммы остаются компактными. */
+table.plain.ops-t{width:100%;min-width:0;table-layout:fixed}
+table.plain.ops-t th,table.plain.ops-t td{text-align:left;vertical-align:top}
+table.plain.ops-t th:first-child,table.plain.ops-t td:first-child{position:static;font-weight:500;color:var(--muted);width:72px}
+table.plain.ops-t th.op-cat,table.plain.ops-t td.op-cat{width:31%;min-width:0;overflow-wrap:anywhere}
+table.plain.ops-t .num{text-align:right;width:128px;white-space:nowrap}
+table.plain.ops-t .bal-c{width:128px}
+table.plain.ops-t td.op-desc{white-space:normal;min-width:0;overflow-wrap:anywhere}
+.ops-t .op-desc b{font-weight:600;display:block}.ops-t .op-desc>span{display:block}
+.ops-t td.op-cat b{font-weight:600}.ops-t b.cat-m{display:none}
+.ops-t .op-desc small{display:block;color:var(--muted);font-size:12px}
+.ops-t small.cat-m,.ops-t small.date-m,.ops-t small.bal-m{display:none}
+.ops-t td.op-cat{white-space:normal;min-width:0}
+table.plain.ops-t td.pos{color:var(--good);background:none}table.plain.ops-t td.neg{color:var(--bad);background:none}
+.ops-t tr.dim td{opacity:.55}
+.ops-t .bal-c{color:var(--muted)}
+.empty-row{text-align:center!important;color:var(--muted);padding:24px!important}
+/* ---------- телефон ---------- */
+:root{--navh:0px;--phone-edge:6px;--phone-reserve:0px}
+@supports (-webkit-touch-callout:none){:root{--phone-edge:4px;--phone-reserve:0px}}
+.m-top{display:none}
+.nav button.m-only{display:none}
+.fld{display:block;min-width:0}.fld>small{display:none}
+.ab-n,.ab-more,.m-only-i{display:none}
+@media (max-width:760px), (pointer:coarse) and (max-height:560px){
+  :root{--navh:56px}
+  html,body{-webkit-text-size-adjust:100%;touch-action:pan-x pan-y;width:100%;max-width:100vw;overflow-x:clip}
+  body{min-height:100dvh;margin-inline:0}
+  input,select,textarea{font-size:16px}
+  .app{display:block;width:100%;max-width:100vw;min-height:100dvh;overflow-x:clip;margin-inline:auto}
+  /* шапка */
+  .side{position:static;width:100%;max-width:100vw;height:auto;overflow:visible;padding:max(8px,env(safe-area-inset-top,0px)) max(var(--phone-edge),env(safe-area-inset-right,0px)) 8px max(var(--phone-edge),env(safe-area-inset-left,0px));gap:10px;flex-direction:row;flex-wrap:wrap;align-items:center;margin-inline:auto}
+  .brand{flex:1;min-width:0;padding:0;gap:8px}
+  .brand>div:last-child{min-width:0}
+  .brand-mark,.brand-mark svg{width:26px;height:26px}
+  .brand b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.brand small{display:block;color:var(--side-muted);font-size:10.5px;line-height:1.1;margin-top:1px}.brand .brand-sub{display:none}
+  .m-top{display:flex;align-items:center;gap:8px;margin-left:auto;min-width:0}
+  .m-top small{color:var(--side-muted);font-size:11.5px;text-align:right;line-height:1.25;white-space:nowrap}
+  .m-top small.zen-stale{color:#ffd28a}
+  .side-sync,.m-top .side-sync{width:32px;height:32px;font-size:17px}
+  /* нижние вкладки */
+  .nav{position:fixed;left:0;right:auto;width:100vw;max-width:100vw;bottom:0;z-index:50;flex-direction:row;gap:0;padding:4px 2px calc(4px + env(safe-area-inset-bottom,0px));border-radius:0;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(20,40,70,.08)}
+  .nav button,.nav button.m-only{display:flex;flex:1 1 0;min-width:0;overflow:hidden;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:48px;padding:3px 1px;font-size:9.5px;font-weight:700;color:var(--muted);text-align:center;position:relative;border-radius:10px;white-space:nowrap}
+  .nav button[aria-current="page"]{background:none;color:var(--accent)}
+  .nav button:hover{background:none}
+  .nav svg{width:21px;height:21px}
+  .nav .nav-dot{position:absolute;top:2px;left:calc(50% + 5px);margin:0;width:15px;height:15px}
+  .nav button.drop-before{box-shadow:inset 3px 0 0 var(--accent)}.nav button.drop-after{box-shadow:inset -3px 0 0 var(--accent)}
+  /* вкладка «Счета» = левая панель на весь экран */
+  .side-foot,.accts-wrap{display:none}
+  body[data-v="accounts"] .side{min-height:100dvh;align-content:flex-start;padding-bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 24px)}
+  body[data-v="accounts"] .accts-wrap{display:block;width:100%;margin-top:4px}
+  body[data-v="accounts"] .side-foot{display:block;width:100%;margin-top:10px;padding:0 6px}
+  body[data-v="accounts"] .main,body[data-v="accounts"] .m-top{display:none}
+  .total-box{padding:0 6px}.total-box small{font-size:12.5px}
+  .accts{gap:12px}.acct-body{display:flex;flex-direction:column;gap:8px}
+  .acct-group{padding:8px 6px}
+  .acct-group h4{font-size:14px;padding:6px 10px}
+  .acct{font-size:15px;padding:8px 10px 8px 24px}
+  .acct-sep{font-size:12.5px;margin:12px 10px 6px}.acct-sep span:last-child{font-size:15px}
+  .acct-group h4[data-col]>span:first-child::before,.acct-sep[data-col]>span:first-child::before{width:16px}
+  /* основная часть */
+  .main{width:100%;max-width:100vw;min-width:0;overflow-x:clip;margin-inline:auto;padding:10px max(var(--phone-edge),env(safe-area-inset-right,0px)) calc(var(--navh) + 24px) max(var(--phone-edge),env(safe-area-inset-left,0px))}
+  .main>*{max-width:100%;min-width:0}
+  .strip{gap:3px;padding:3px;max-width:100%}
+  .sarrow{width:34px}
+  .stoday{padding:0 8px!important;font-size:11.5px}
+  .seg{height:30px;font-size:12.5px;flex-basis:28px}
+  .seg.wide{flex-basis:46px}
+  /* таблицы БДДС и Бюджета: одна декада/месяц во всю ширину */
+  .tw{width:100%;overflow:visible;max-width:100%;max-height:none;touch-action:pan-y}
+  table.bg{width:100%;margin-inline:0}
+  table.bg thead tr.cards th,table.bg.monthly thead tr.cards th{position:static;height:auto;padding:0 0 8px}
+  table.bg thead tr.cards th.blk{padding-bottom:6px}
+  /* плашка декады (месяца) закреплена сверху, строка «План / Факт» — сразу под ней */
+  table.bg.stick thead tr.cards th.mcard{position:sticky;top:0;z-index:4;background:var(--bg)}
+  table.bg thead tr.colh th,table.bg.monthly thead tr.colh th{top:var(--mcardh,0px);height:36px;font-size:10.5px;letter-spacing:.02em}
+  .blk{border-left-width:4px}
+  table.bg th,table.bg td{padding:0 3px}
+  table.bg tbody td{height:31px;font-size:12.5px}
+  table.bg tbody td.sc{font-size:clamp(10.5px,3vw,12.5px)}
+  table.bg tbody tr.i td.sc,table.bg tbody tr.b td.sc{padding-left:9px;white-space:normal;line-height:1.15;overflow-wrap:break-word}
+  table.bg tbody tr.g td.sc{white-space:normal;padding-top:2px;padding-bottom:2px}
+  table.bg tbody tr.g .gbtn{text-align:left;line-height:1.15;overflow:visible;overflow-wrap:break-word}
+  table.bg tbody tr.b td{font-size:11.5px}
+  table.bg thead tr.colh th small.dvs{display:none}
+  table.bg td .bal{font-size:11px;padding:1px 4px}
+  table.bg td .dp{font-size:inherit;padding:.08em .45em}
+  table.bg tbody td.d{font-size:11.5px}
+  .avail{font-size:11px;margin-right:4px}
+  .gtag,.dh{display:none}
+  td.cell input{font-size:16px;height:32px}
+  .mcard .dcard,.mcard .dcard.mc{height:auto;padding:12px 14px 10px;column-gap:14px;border-radius:12px}
+  .mcard .dc-date b{font-size:22px}.mcard .dc-date span{font-size:11px}
+  .mcard .dc-lines{font-size:13px;line-height:1.5}
+  .mcard .dc-big{margin-top:6px;padding-top:6px}.mcard .dc-big .n{font-size:24px}
+  .mcard .dc-big small,.mcard .dc-net small{font-size:12px}.mcard .dc-net b{font-size:15px}
+  .mcard .cpy-plan{font-size:12px;padding:4px 10px}
+  .kb-only{display:none}.m-only-i{display:inline}
+  .opsp{top:auto;left:0;right:0;bottom:0;width:auto;max-height:75vh;border-left:0;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(20,40,70,.25)}
+  /* таблица счёта на телефоне — список: дата и категория под описанием, остаток под суммой */
+  table.plain.ops-t{width:100%;min-width:0}
+  .ops-t .op-cat,.ops-t .op-date,.ops-t .bal-c,.ops-all-t .op-acct{display:none}
+  .ops-t small.cat-m,.ops-t small.date-m,.ops-t small.bal-m,.ops-t small.acct-m,.ops-t b.cat-m{display:block}
+  .ops-t small.bal-m{color:var(--muted);font-weight:500;font-size:11.5px;margin-top:2px}
+  table.plain.ops-t td.op-desc{min-width:0;max-width:none;width:auto}
+  table.plain.ops-t td{padding:8px 10px}
+  .acct-sum{margin-left:0;width:100%}
+  .hint{font-size:12px}
+  /* окно «Проблемы в плане»: свёрнуто в строку над вкладками */
+  .alert-box{left:6px;right:6px;width:auto;transform:none;bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 10px);padding:10px 44px 10px 14px;font-size:13px;max-height:50vh;overflow:auto}
+  .alert-box b.ab-t{margin:0;cursor:pointer;display:flex;align-items:center;gap:8px}
+  .alert-box.open b.ab-t{margin-bottom:4px}
+  .ab-n{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:10px;background:#b3132b;color:#fff;font-size:12px;padding:0 6px}
+  .ab-more{display:inline;font-weight:600;font-size:12.5px;opacity:.8;margin-left:auto}
+  .alert-box.open .ab-more{display:none}
+  .alert-box:not(.open) ul,.alert-box:not(.open)>small{display:none}
+  .alert-box .ab-x{top:7px;right:6px;width:32px;height:32px}
+  .dcard.sw-l{animation:swl .22s ease-out}.dcard.sw-r{animation:swr .22s ease-out}
+  @keyframes swl{from{transform:translateX(28px);opacity:.35}}@keyframes swr{from{transform:translateX(-28px);opacity:.35}}
+  .toast{bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 14px)}
+  .zen-busy{bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 14px);white-space:normal;max-width:calc(100vw - 24px)}
+  .savebar.dirty{left:6px;right:6px;bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px) + 10px)}
+  /* прогноз */
+  .card{padding:14px 12px}
+  .legend{gap:6px}.lg{font-size:12px;padding:3px 9px}.lg-hint{width:100%}
+  table.plain{font-size:12.5px}
+  table.plain th,table.plain td{padding:6px 8px}
+  table.plain td:first-child{white-space:normal;min-width:92px;max-width:116px;line-height:1.2}
+  /* настройки */
+  .it-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"name name" "open lim" "chk del";gap:8px 10px;padding:12px 0}
+  .it-row.it-head{display:none}
+  .it-row>span:empty{display:none}
+  .it-row .f-name{grid-area:name}.it-row .f-open{grid-area:open}.it-row .f-lim{grid-area:lim}
+  .it-row .chks{grid-area:chk;flex-direction:row;flex-wrap:wrap;gap:6px 16px}
+  .it-row .it-del{grid-area:del;justify-self:end;align-self:center}
+  .fld>small{display:block;font-size:11.5px;color:var(--muted);margin:0 0 3px 2px}
+  .it-row input[type=text],.it-row input:not([type]),.field input,.field select,.zmap select,.lnk-in{font-size:16px}
+  .acct-filter,.ops-all-filter{grid-template-columns:1fr}.acct-filter input,.acct-filter select,.ops-all-filter input,.ops-all-filter select,.ops-presets select{font-size:16px}.ops-presets{display:grid;grid-template-columns:1fr 1fr}.ops-presets select{grid-column:1/-1;max-width:none;width:100%}
+  .it-row input[type=text],.it-row input:not([type]){padding:9px 10px}
+  .it-row label.chk{font-size:13.5px;gap:7px}.it-row label.chk input{width:18px;height:18px}
+  .row-actions{gap:8px}.row-actions>button{flex:1 1 auto}
+  .zen-reset{margin-left:0}
+  .zmap:not(.zprev),.zmap:not(.zprev)>tbody{display:block}
+  /* сверка остатков: в строке счёт и итог сверки, под ними — обе суммы с подписями */
+  .zrec,.zrec>tbody{display:block}.zrec tr:first-child{display:none}
+  .zrec tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;align-items:center;padding:9px 0;border-bottom:1px dotted var(--dot)}
+  .zrec td{padding:0;border:0;width:auto!important;text-align:left!important}
+  .zrec td:nth-child(1){grid-column:1;grid-row:1;font-weight:600}.zrec td:nth-child(4){grid-column:2;grid-row:1;text-align:right!important}
+  .zrec td:nth-child(2){grid-column:1;grid-row:2}.zrec td:nth-child(3){grid-column:2;grid-row:2;text-align:right!important}
+  .zrec td[data-l]{font-size:13.5px;white-space:nowrap}.zrec td[data-l]::before{content:attr(data-l);display:block;color:var(--muted);font-size:11.5px;line-height:1.3}
+  .zmap:not(.zprev) tr{display:flex;flex-direction:column;gap:6px;padding:9px 0;border-bottom:1px dotted var(--dot)}
+  .zmap:not(.zprev) td{width:auto!important;padding:0;border:0}
+  .zprev{font-size:12.5px}.zprev td,.zprev th{padding:5px 6px}
+  details.zsec>summary{flex-wrap:wrap;margin-left:0;margin-right:0}
+  details.zsec>summary::after{display:none}
+}
+/* телефон повёрнут горизонтально: меню — вертикальная полоса слева, чтобы не съедать и без того низкий экран */
+:root{--navw:0px}
+@media (max-width:760px) and (orientation:landscape) and (max-height:560px), (pointer:coarse) and (orientation:landscape) and (max-height:560px){
+  :root{--navh:0px;--navw:calc(56px + env(safe-area-inset-left,0px))}
+  .nav{top:0;bottom:0;right:auto;width:var(--navw);flex-direction:column;justify-content:stretch;gap:0;padding:4px 3px;padding-left:max(3px,env(safe-area-inset-left,0px));border-top:0;border-right:1px solid var(--line);box-shadow:4px 0 16px rgba(20,40,70,.08)}
+  .nav button,.nav button.m-only{flex:1 1 0;width:100%;height:auto;min-height:0;max-height:none;padding:2px;font-size:9.5px;line-height:1.05}
+  .nav svg{width:18px;height:18px}
+  .nav button.drop-before{box-shadow:inset 0 3px 0 var(--accent)}.nav button.drop-after{box-shadow:inset 0 -3px 0 var(--accent)}
+  .side{padding-left:calc(var(--navw) + 6px);padding-right:max(6px,env(safe-area-inset-right,0px))}
+  .main{padding-left:calc(var(--navw) + 4px);padding-right:max(4px,env(safe-area-inset-right,0px));padding-bottom:24px}
+  .alert-box{left:auto;right:6px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:auto;max-width:min(420px,calc(100vw - var(--navw) - 12px))}
+  .savebar.dirty{left:calc(var(--navw) + 6px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
+  .toast,.zen-busy{bottom:calc(env(safe-area-inset-bottom,0px) + 12px);margin-left:calc(var(--navw) / 2)}
+  body[data-v="accounts"] .side{padding-bottom:24px}
+  .opsp{top:0;left:auto;width:min(420px,62vw);max-height:none;border-radius:0}
+  /* несколько декад рядом: подписи в плашках чуть мельче; первый столбец шире */
+  table.bg tbody tr.g td.sc{white-space:nowrap}
+  table.bg tbody tr.g .gbtn{white-space:nowrap;overflow:visible;overflow-wrap:normal;text-overflow:clip;max-width:none}
+  .dcard .dc-net small,.dcard .dc-big small{font-size:10px}
+}
+/* узкий телефон (до 400 точек): значки типов в строках групп не помещаются рядом с названием */
+@media (max-width:400px){
+  table.bg .gbtn svg.ticon{display:none}
+  .dv-l{display:none}
+}
+/* невысокий экран телефона (до 720 точек по высоте, например при увеличенном масштабе в браузере): плотнее плашка декады, полоса и строки */
+@media (max-width:760px) and (max-height:720px), (pointer:coarse) and (max-height:560px){
+  .strip{margin-bottom:8px}
+  .seg{height:28px}
+  .mcard .dcard,.mcard .dcard.mc{padding:10px 12px 8px}
+  .mcard .dc-date b{font-size:20px}
+  .mcard .dc-lines{font-size:12.5px;line-height:1.36}
+  .mcard .dc-big{margin-top:4px;padding-top:4px}.mcard .dc-big .n{font-size:21px}
+  .mcard .dc-net b{font-size:14px}
+  table.bg tbody td{height:30px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="30" height="30"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d9bf0"/><stop offset="1" stop-color="#1c63a9"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#lg)"/><path fill="#fff" fill-rule="evenodd" d="M24 12h13a12 12 0 0 1 0 24H30v4h10a1.5 1.5 0 0 1 1.5 1.5v3A1.5 1.5 0 0 1 40 46H30v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4h-6.5a1.5 1.5 0 0 1-1.5-1.5v-3a1.5 1.5 0 0 1 1.5-1.5H22v-4h-8v-7h8V14a2 2 0 0 1 2-2zm6 7v10h7a5 5 0 0 0 0-10z"/></svg></div><div><b>Семейный бюджет</b><small><span class="brand-sub">план · факт · прогноз · </span><span class="brand-ver">v8.58</span></small></div></div>
+    <div class="m-top" id="mTop"></div>
+    <nav class="nav" id="nav">
+      <button data-view="bdr"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2v4M13 2v4M7 11h6M7 14h4"/></svg>Бюджет</button>
+      <button data-view="budget" aria-current="page"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M3 8h14M8 8v8"/></svg>БДДС</button>
+      <button data-view="accounts" class="m-only"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H14.5v2.5"/><rect x="3" y="6.5" width="14" height="9.5" rx="2"/><path d="M17 9.3h-3a1.9 1.9 0 0 0 0 3.8h3"/></svg>Счета</button>
+      <button data-view="opsall"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="4.5"/><path d="M12 12l4 4M3 16h7"/></svg>Операции</button>
+      <button data-view="forecast"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15l4-5 3 3 6-8"/><path d="M3 17h14"/></svg>Прогноз</button>
+      <button data-view="settings"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="2.6"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4"/></svg>Настройки</button>
+    </nav>
+    <div class="accts-wrap">
+      <div class="total-box" id="totalBox"></div>
+      <div class="accts" id="accts" style="margin-top:10px"></div>
+    </div>
+    <div class="side-foot"><span class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Подключаюсь…</span></span><br><span id="storeText"></span></div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div class="alert-box" id="alertBox" role="alert" hidden></div>
+
+<script>
+// если основной скрипт упал (например, файл вставлен не полностью) — показать причину вместо пустого экрана
+window.__bddsFail=function(msg){try{var m=document.getElementById('main')||document.body;if(m.dataset.err)return;m.dataset.err='1';
+  var t=document.getElementById('syncText');if(t)t.textContent='Ошибка приложения';
+  m.insertAdjacentHTML('afterbegin','<div style="margin:24px;padding:16px 18px;border-radius:10px;background:#fdecec;color:#8a1c1c;font:14px/1.5 sans-serif"><b>Приложение не запустилось.</b><br>'+String(msg).replace(/</g,'&lt;')+'<br>Чаще всего так бывает, если файл Index.html в Apps Script вставлен не целиком. Проверьте, что он заканчивается строкой &lt;/html&gt;, сохраните, сделайте новую версию развертывания и обновите страницу.</div>')}catch(_){}};
+setTimeout(function(){if(!window.__bddsStarted)window.__bddsFail('Основной код приложения не загрузился.')},4000);
+window.addEventListener('error',function(e){try{if(window.__bddsStarted===2)return;var m=document.getElementById('main')||document.body;if(m&&m.dataset.err)return;if(m)m.dataset.err='1';
+  var t=document.getElementById('syncText');if(t)t.textContent='Ошибка приложения';
+  var msg=(e&&e.message)||'неизвестная ошибка';var ln=e&&e.lineno?(' (строка '+e.lineno+')'):'';
+  m.insertAdjacentHTML('afterbegin','<div style="margin:24px;padding:16px 18px;border-radius:10px;background:#fdecec;color:#8a1c1c;font:14px/1.5 sans-serif"><b>Приложение не запустилось.</b><br>'+String(msg).replace(/</g,'&lt;')+ln+'<br>Чаще всего так бывает, если файл Index.html в Apps Script вставлен не целиком. Проверьте, что он заканчивается строкой &lt;/html&gt;, сохраните и обновите страницу.</div>')}catch(_){}});
+</script>
+<script>
+window.__bddsStarted=1;
+(()=>{
+// ================= model =================
+// Все суммы хранятся и вводятся положительными; знак задаёт строка.
+const DEFAULT_ACCTS=[
+  {id:'cash',type:'cash',name:'Наличка и дебет'},
+  {id:'inc_salary',type:'income',name:'ЗП, премии, кэшбэк'},
+  {id:'inc_benefit',type:'income',name:'Пособия, вычеты, льготы'},
+  {id:'inc_interest',type:'income',name:'Проценты, дивиденды'},
+  {id:'mort',type:'expense',name:'Ипотека'},
+  {id:'cash_exp',type:'expense',name:'Покупки: нал / дебет'},
+  {id:'sber',type:'credit',name:'Сбер',limit:350000},
+  {id:'tb',type:'credit',name:'Т-Банк',limit:299000},
+  {id:'alfa',type:'credit',name:'Альфа',limit:300000},
+  {id:'sov',type:'credit',name:'Совком',limit:150000},
+  {id:'sav',type:'savings',name:'Накопления (НЗ)'},
+  {id:'fund',type:'savings',name:'Фонд крупных покупок'},
+  {id:'debt',type:'debt',name:'Мне должны'},
+];
+// категории бюджета доходов и расходов (из вашей прошлой таблицы бюджета)
+const DEFAULT_BCATS=[
+  ['Обязательные',[['b_mort','Ипотека'],['b_utils','ЖКХ и связь'],['b_kids','Дети'],['b_auto','Авто: топливо, ТО, шины'],['b_parents','Родители'],['b_ins','Страховки'],['b_tax','Налоги, госпошлины']]],
+  ['Повседневные',[['b_food','Продукты'],['b_home','Товары для дома, химия'],['b_med','Лекарства, медицина'],['b_beauty','Красота'],['b_sport','Спорт, фитнес'],['b_services','Услуги разные']]],
+  ['Необязательные',[['b_cafe','Кафе, еда вне дома'],['b_gifts','Подарки'],['b_fun','Развлечения'],['b_books','Книги, канцтовары'],['b_habits','Вредные привычки']]],
+  ['Цели и годовые расходы',[['b_clothes','Одежда, обувь'],['b_vacation','Отпуск'],['b_edu','Образование']]],
+].flatMap(([g,list])=>list.map(([id,name])=>({id,type:'bcat',group:g,name})));
+// значки типов счетов (линейные, как в меню)
+const ICON_PATHS={
+  cash:'<path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H14.5v2.5"/><rect x="3" y="6.5" width="14" height="9.5" rx="2"/><path d="M17 9.3h-3a1.9 1.9 0 0 0 0 3.8h3"/><circle cx="14.1" cy="11.2" r=".7" fill="currentColor" stroke="none"/>',
+  credit:'<rect x="2.5" y="4.5" width="15" height="11" rx="2"/><path d="M2.5 8.3h15"/><path d="M5.5 12.5h3.5"/>',
+  savings:'<ellipse cx="10" cy="5.2" rx="5.5" ry="2"/><path d="M4.5 5.2v3.2c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2V5.2"/><path d="M4.5 8.4v3.2c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2V8.4"/><path d="M4.5 11.6v3.2c0 1.1 2.5 2 5.5 2s5.5-.9 5.5-2v-3.2"/>',
+  debt:'<path d="M3.5 7h12"/><path d="M12.5 4l3 3-3 3"/><path d="M16.5 13h-12"/><path d="M7.5 10l-3 3 3 3"/>',
+};
+ICON_PATHS.bcat='<circle cx="10" cy="10" r="6.8"/><path d="M10 3.2V10h6.8"/>';
+const ticon=(t,cls)=>ICON_PATHS[t]?`<svg class="ticon ${cls||''}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[t]}</svg>`:'';
+const TYPES=[
+  {t:'cash',title:'Наличка и дебетовые карты',one:''},
+  {t:'credit',title:'Кредитки',one:'кредитку',tag:'кредитка'},
+  {t:'savings',title:'Накопления и вклады',one:'счёт накоплений',tag:'накопления'},
+  {t:'debt',title:'Долги',one:'долг',tag:'долг'},
+  {t:'income',title:'Статьи доходов',one:'статью дохода'},
+  {t:'expense',title:'Статьи расходов БДДС',one:'статью расхода',sub:'Покупки в БДДС — одной строкой «Покупки: нал / дебет» и покупками по картам. Разбивка покупок по категориям — только в Бюджете, категории ниже. Для ипотеки, аренды, кредита, ЖКХ и других разовых платежей отметьте «фикс. платёж»: они не оцениваются день ко дню.'},
+  {t:'bcat',title:'Категории Бюджета',one:'категорию',sub:'Категории для месячного бюджета. План задаётся здесь, факт приходит из операций Дзен-мани. Для ипотеки, аренды, кредита, ЖКХ и других разовых обязательных расходов можно включить «фикс. платёж».'},
+];
+const ACCT_ROWS={
+  credit:[{s:'_in',name:'Пополнение',kind:'dep',cash:-1,bal:1},{s:'_out',name:'Снятие',kind:'wd',cash:1,bal:-1},{s:'_exp',name:'Покупки по карте',kind:'exp',cash:0,bal:-1}],
+  savings:[{s:'_in',name:'Положил',kind:'dep',cash:-1,bal:1},{s:'_out',name:'Взял',kind:'wd',cash:1,bal:-1}],
+  debt:[{s:'_in',name:'Взял в долг / мне вернули',kind:'dep',cash:1,bal:-1},{s:'_out',name:'Дал в долг / я вернул',kind:'wd',cash:-1,bal:1}],
+};
+const LEGACY_OPEN_KEYS=['cash','sav','fund','sber','tb','alfa','sov','debt'];
+
+let state={settings:{factDate:null},config:null,decades:{},months:{},ready:false,sheetUrl:null,sheetName:null,appUrl:null,version:'8.58'};
+function getItems(){
+  let items;
+  if(Array.isArray(state.config)&&state.config.length)items=state.config;
+  else{const op=state.settings?.opening||{};items=DEFAULT_ACCTS.map(x=>LEGACY_OPEN_KEYS.includes(x.id)?{...x,opening:Number(op[x.id])||0}:{...x})}
+  // старые категории бюджета по умолчанию (b_…) давно нигде не показываются — не показываем и сейчас
+  return items.some(x=>x.type==='bcat'&&LEGACY_BCATS.has(x.id))?items.filter(x=>!(x.type==='bcat'&&LEGACY_BCATS.has(x.id))):items;
+}
+const LEGACY_BCATS=new Set(DEFAULT_BCATS.map(x=>x.id));
+function rowsOf(item){
+  if(item.type==='income')return [{id:item.id,item,name:item.name,kind:'inc',cash:1,bal:0}];
+  if(item.type==='expense')return [{id:item.id,item,name:item.name,kind:'exp',cash:-1,bal:0}];
+  return (ACCT_ROWS[item.type]||[]).map(r=>({...r,id:item.id+r.s,item,acct:item.id}));
+}
+const DEF_BLOCK_TYPES=['income','savings','expense','credit','debt'];
+const blockType=(id,items)=>id==='g_inc'?'income':id==='g_exp'?'expense':((items.find(x=>'g_'+x.id===id)||{}).type||null);
+function orderedBlocks(items){
+  const vis=items.filter(x=>!x.hidden&&['income','expense','credit','savings','debt'].includes(x.type));
+  const all=[];
+  DEF_BLOCK_TYPES.forEach(t=>{if(t==='income'){if(vis.some(x=>x.type==='income'))all.push('g_inc')}else if(t==='expense'){if(vis.some(x=>x.type==='expense'))all.push('g_exp')}else vis.filter(x=>x.type===t).forEach(a=>all.push('g_'+a.id))});
+  let saved=[];try{saved=JSON.parse((state.settings&&state.settings.order)||'[]')}catch(e){}
+  if(!Array.isArray(saved))saved=[];
+  const out=[];saved.forEach(id=>{if(all.includes(id)&&!out.includes(id))out.push(id)});
+  all.forEach((id,k)=>{if(out.includes(id))return;const t=blockType(id,items);let pos=-1;
+    out.forEach((x,j)=>{if(blockType(x,items)===t)pos=j});
+    if(pos<0)for(let q=k-1;q>=0;q--){const j=out.indexOf(all[q]);if(j>=0){pos=j;break}}
+    out.splice(pos+1,0,id)});
+  return out;
+}
+function saveOrder(list){
+  if(staleBlock())return;
+  state.settings={...state.settings,order:JSON.stringify(list)};M=buildModel();render();
+  store.writeSettings({order:state.settings.order}).catch(()=>{});
+}
+function moveInList(list,id,target,after){const a=list.filter(x=>x!==id);let j=a.indexOf(target);if(j<0)return list;a.splice(after?j+1:j,0,id);return a}
+function moveBlock(id,target,after){const cur=orderedBlocks(getItems());if(id===target)return;saveOrder(moveInList(cur,id,target,after))}
+function moveType(t,u,after){
+  const items=getItems();const cur=orderedBlocks(items);if(t===u)return;
+  const mine=cur.filter(x=>blockType(x,items)===t),rest=cur.filter(x=>blockType(x,items)!==t);
+  const idx=rest.map((x,j)=>blockType(x,items)===u?j:-1).filter(j=>j>=0);if(!idx.length)return;
+  const at=after?idx[idx.length-1]+1:idx[0];rest.splice(at,0,...mine);saveOrder(rest);
+}
+function saveItems(items,msg){
+  if(staleBlock())return false;
+  if(ui.view==='settings'&&ui.dirty){toast('Сначала сохраните или отмените изменения в настройках');return false}
+  state.config=items;ui.draft=null;M=buildModel();render();store.saveConfig(items).then(()=>{if(msg)toast(msg)},()=>{});return true;
+}
+function moveItem(id,target,after){
+  const items=getItems().map(x=>({...x}));const it=items.find(x=>x.id===id),tg=items.find(x=>x.id===target);if(!it||!tg||it===tg)return;
+  items.splice(items.indexOf(it),1);items.splice(items.indexOf(tg)+(after?1:0),0,it);saveItems(items);
+}
+function buildModel(){
+  const items=getItems();
+  const rows={};items.forEach(it=>rowsOf(it).forEach(r=>rows[r.id]=r));
+  const vis=items.filter(x=>!x.hidden);
+  const groups=[];
+  const inc=vis.filter(x=>x.type==='income'),exp=vis.filter(x=>x.type==='expense');
+  // порядок блоков задаётся перетаскиванием (настройка order), по умолчанию: доходы → накопления → расходы → кредитки → долги
+  for(const id of orderedBlocks(items)){
+    if(id==='g_inc'){if(inc.length)groups.push({id:'g_inc',name:'Доходы',kind:'inc',type:'income',rows:inc.flatMap(rowsOf)});continue}
+    if(id==='g_exp'){if(exp.length)groups.push({id:'g_exp',name:'Расходы',kind:'exp',type:'expense',rows:exp.flatMap(rowsOf)});continue}
+    const a=vis.find(x=>'g_'+x.id===id);if(a)groups.push({id,name:a.name,tag:TYPES.find(y=>y.t===a.type).tag,acct:a,type:a.type,rows:rowsOf(a)});
+  }
+  const bcats=items.filter(x=>x.type==='bcat');
+  return {items,rows,groups,bcats,bcatIds:new Set(bcats.map(x=>x.id)),incomes:items.filter(x=>x.type==='income')};
+}
+let M=buildModel();
+
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const parse=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d||1)};
+const todayIso=iso(new Date());
+const balanceHist=it=>Array.isArray(it&&it.balanceHistory)?it.balanceHistory:[];
+const limitHist=it=>Array.isArray(it&&it.limitHistory)?it.limitHistory:[];
+const balanceAdjAt=(it,date)=>balanceHist(it).reduce((s,h)=>h&&h.date<=date?s+(Number(h.delta)||0):s,0);
+function limitAt(it,date){let v=Number(it&&it.limit)||0;for(const h of limitHist(it).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))))if(h&&h.date<=date&&Number.isFinite(Number(h.value)))v=Math.max(0,Number(h.value));return v}
+function currentFactForItem(it){
+  let b=Number(it&&it.opening)||0;
+  if(!it)return b;
+  if(it.type==='cash'){
+    const all=Object.values(M.rows);for(let i=0;i<=CUR&&i<DECADES.length;i++){const dc=DECADES[i];for(const r of all){const v=val(dc,r.id,'f');if(v)b+=r.cash*v}}
+  }else{
+    const rows=rowsOf(it);for(let i=0;i<=CUR&&i<DECADES.length;i++){const dc=DECADES[i];for(const r of rows){const v=val(dc,r.id,'f');if(v)b+=r.bal*v}}
+  }
+  return b+balanceAdjAt(it,todayIso);
+}
+function buildDecades(){
+  const out=[];const push=(s,e)=>out.push({key:iso(s),start:iso(s),end:iso(e)});
+  push(new Date(2026,8,14),new Date(2026,8,20));push(new Date(2026,8,21),new Date(2026,8,30));
+  let y=2026,m=9;const now=new Date();
+  // горизонт планирования: 24 месяца вперёд от текущего, сдвигается сам каждый месяц
+  const limit=new Date(Math.max(new Date(2027,8,30),new Date(now.getFullYear()+2,now.getMonth()+1,0)));
+  for(;;){
+    const last=new Date(y,m+1,0).getDate();
+    for(const [a,b] of [[1,10],[11,20],[21,last]]){const s=new Date(y,m,a),e=new Date(y,m,b);if(s>limit)return out;push(s,e)}
+    m++;if(m>11){m=0;y++}
+  }
+}
+const DECADES=buildDecades();
+const MONTHS_P=(()=>{const out=[];DECADES.forEach((d,i)=>{const k=d.start.slice(0,7);let m=out[out.length-1];if(!m||m.key!==k){m={key:k,start:d.start,end:d.end,dec:[]};out.push(m)}m.end=d.end;m.dec.push(i)});return out})();
+const findCur=list=>{const i=list.findIndex(d=>d.start<=todayIso&&todayIso<=d.end);return i<0?(todayIso<list[0].start?0:list.length-1):i};
+const CUR=findCur(DECADES),CURM=findCur(MONTHS_P);
+const DEC_MONTH=DECADES.map(d=>MONTHS_P.findIndex(m=>m.key===d.start.slice(0,7))); // номер месяца для каждой декады
+const MON=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const MONTHS=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+const fmtD=s=>{const d=parse(s);return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')};
+const fmtDateRu=s=>{const p=String(s||'').split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:String(s||'')};
+const label=dc=>fmtD(dc.start)+'–'+fmtD(dc.end)+'.'+dc.end.slice(2,4);
+const mlabel=m=>cap(MONTHS[+m.key.slice(5)-1])+' '+m.key.slice(0,4);
+const nf0=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
+const nf2=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2});
+const money=v=>(Math.round(v)<0?'−':'')+nf0.format(Math.abs(Math.round(v)))+' ₽';
+const moneyShort=v=>(Math.round(v)<0?'−':'')+nf0.format(Math.abs(Math.round(v)));
+const signed=v=>(Math.round(v)>0?'+':Math.round(v)<0?'−':'')+nf0.format(Math.abs(Math.round(v)));
+const fmtCell=v=>v===null?'':nf2.format(Math.abs(v));
+// на телефоне столбцы узкие: в ячейках — целые рубли (копейки хранятся и видны при правке ячейки)
+const fmtCellPh=v=>v===null?'':nf0.format(Math.round(Math.abs(v)));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+let ui={sideCol:{},creditView:{},view:'budget',starts:{budget:null,bdr:null},n:3,collapsed:{},draft:null,fcOff:{},fcTableX:null,fcMonths:12,setOpen:{},opsFilter:{q:'',acct:'all',cat:'all',month:'all'},opsPresets:{},opsPreset:''};
+let legacyOpsUi=null;
+try{const s=JSON.parse(localStorage.getItem('bdds-ui')||'{}');if(s.collapsed)ui.collapsed=s.collapsed;if(s.fcOff)ui.fcOff=s.fcOff;if(s.sideCol)ui.sideCol=s.sideCol;if(s.creditView&&typeof s.creditView==='object')ui.creditView=s.creditView;if(s.setOpen)ui.setOpen=s.setOpen;if(Number.isFinite(+s.fcMonths))ui.fcMonths=+s.fcMonths;if(s.view)ui.view=s.view==='months'?'bdr':s.view;
+  if(s.opsFilter||s.opsPresets||s.opsPreset){legacyOpsUi={opsFilter:s.opsFilter,opsPresets:s.opsPresets,opsPreset:s.opsPreset};if(s.opsFilter&&typeof s.opsFilter==='object')ui.opsFilter={...ui.opsFilter,...s.opsFilter};if(s.opsPresets&&typeof s.opsPresets==='object'&&!Array.isArray(s.opsPresets))ui.opsPresets=s.opsPresets;if(typeof s.opsPreset==='string')ui.opsPreset=s.opsPreset}}catch(e){}
+const uiSnapshot=()=>({collapsed:ui.collapsed,view:ui.view,fcOff:ui.fcOff,fcMonths:ui.fcMonths,sideCol:ui.sideCol,creditView:ui.creditView,setOpen:ui.setOpen});
+const applyUiSnapshot=s=>{if(!s||typeof s!=='object')return;if(s.collapsed&&typeof s.collapsed==='object')ui.collapsed=s.collapsed;if(s.fcOff&&typeof s.fcOff==='object')ui.fcOff=s.fcOff;if(s.sideCol&&typeof s.sideCol==='object')ui.sideCol=s.sideCol;if(s.creditView&&typeof s.creditView==='object')ui.creditView=s.creditView;if(s.setOpen&&typeof s.setOpen==='object')ui.setOpen=s.setOpen;if(Number.isFinite(+s.fcMonths))ui.fcMonths=+s.fcMonths;if(s.view)ui.view=s.view==='months'?'bdr':s.view};
+const LAUNCHER_ORIGIN='https://ndinar1982.github.io';
+const launcherWin=()=>window.top!==window?window.top:null;
+const saveUi=()=>{const snap=uiSnapshot();try{localStorage.setItem('bdds-ui',JSON.stringify(snap))}catch(e){}try{const w=launcherWin();if(w)w.postMessage({bdds:'ui-save',value:snap},LAUNCHER_ORIGIN)}catch(e){}};
+window.addEventListener('message',e=>{if(e.origin!==LAUNCHER_ORIGIN||!e.data||e.data.bdds!=='ui-state')return;applyUiSnapshot(e.data.value);try{localStorage.setItem('bdds-ui',JSON.stringify(uiSnapshot()))}catch(_){}if(state.ready)render()});
+try{const w=launcherWin();if(w)w.postMessage({bdds:'ui-get'},LAUNCHER_ORIGIN)}catch(e){};
+let opsSettingsSig='',opsSettingsT=null,opsMigrated=false;
+const opsCleanFilter=f=>({q:String(f&&f.q||''),acct:String(f&&f.acct||'all'),cat:String(f&&f.cat||'all'),month:String(f&&f.month||'all')});
+function opsSettingsSig_(){const s=state.settings||{};return [s.opsFilter||'',s.opsPresets||'',s.opsPreset||''].join('\n')}
+function opsStripLegacyLocal(){try{const s=JSON.parse(localStorage.getItem('bdds-ui')||'{}');delete s.opsFilter;delete s.opsPresets;delete s.opsPreset;localStorage.setItem('bdds-ui',JSON.stringify(s))}catch(e){}legacyOpsUi=null}
+function opsPersistSettings(withPresets,immediate){
+  const payload={opsFilter:JSON.stringify(opsCleanFilter(ui.opsFilter)),opsPreset:String(ui.opsPreset||'')};
+  if(withPresets)payload.opsPresets=JSON.stringify(ui.opsPresets||{});
+  state.settings={...state.settings,...payload};opsSettingsSig=opsSettingsSig_();
+  if(!store.writeSettings||!state.ready||state.stale)return;
+  clearTimeout(opsSettingsT);const write=()=>store.writeSettings(payload).catch(()=>{});if(immediate)write();else opsSettingsT=setTimeout(write,500);
+}
+function opsLoadSettings(){
+  const s=state.settings||{},sig=opsSettingsSig_();if(sig===opsSettingsSig&&!(legacyOpsUi&&!opsMigrated&&store.kind==='gas'&&state.ready&&!state.stale))return;let needMigration=false;
+  if(s.opsFilter){try{ui.opsFilter=opsCleanFilter(JSON.parse(s.opsFilter))}catch(e){}}else if(legacyOpsUi&&legacyOpsUi.opsFilter){ui.opsFilter=opsCleanFilter(legacyOpsUi.opsFilter);needMigration=true}
+  if(s.opsPresets){try{const p=JSON.parse(s.opsPresets);ui.opsPresets=p&&typeof p==='object'&&!Array.isArray(p)?p:{}}catch(e){ui.opsPresets={}}}else if(legacyOpsUi&&legacyOpsUi.opsPresets&&typeof legacyOpsUi.opsPresets==='object'&&!Array.isArray(legacyOpsUi.opsPresets)){ui.opsPresets=legacyOpsUi.opsPresets;needMigration=true}
+  if(s.opsPreset!==undefined&&s.opsPreset!==null)ui.opsPreset=String(s.opsPreset||'');else if(legacyOpsUi&&typeof legacyOpsUi.opsPreset==='string'){ui.opsPreset=legacyOpsUi.opsPreset;needMigration=true}
+  opsSettingsSig=sig;
+  if(needMigration&&!opsMigrated&&store.kind==='gas'&&state.ready&&!state.stale){opsMigrated=true;opsPersistSettings(true,true);opsStripLegacyLocal()}
+}
+
+const factDate=()=>state.settings?.factDate||todayIso;
+const modeOf=p=>p.end<factDate()?'f':'p';
+const num=x=>typeof x==='number'?Math.abs(x):null;
+const val=(dc,rid,k)=>num(state.decades[dc.key]?.v?.[rid]?.[k]);
+const mval=(m,rid,k)=>num(state.months[m.key]?.v?.[rid]?.[k]);
+// Закрытая декада — факт. В открытой декаде расходы и переводы считаются как max(план, факт).
+// Для доходов безопасный режим консервативнее: как только появился факт, считаем его окончательной суммой,
+// а не автоматически ожидаем недостающую часть плана. Старое правило можно вернуть в Настройках.
+const used=(dc,rid)=>{const f=val(dc,rid,'f')||0;if(modeOf(dc)==='f')return f;return Math.max(val(dc,rid,'p')||0,f)};
+
+function compute(){
+  const accts=M.items.filter(x=>['cash','credit','savings','debt'].includes(x.type));
+  const bal=Object.fromEntries(accts.map(a=>[a.id,Number(a.opening)||0]));
+  if(!('cash' in bal))bal.cash=0;
+  const all=Object.values(M.rows);
+  const typeOf=Object.fromEntries(accts.map(a=>[a.id,a.type]));
+  const res=[];const appliedAdj=Object.fromEntries(accts.map(a=>[a.id,0]));
+  for(const dc of DECADES){
+    const cashStart=bal.cash;let inc=0,cashExp=0,trans=0,transCC=0,transSD=0,cardPurch=0,debtOut=0;
+    for(const r of all){
+      const v=used(dc,r.id);if(!v)continue;
+      bal.cash+=r.cash*v;
+      if(r.acct)bal[r.acct]=(bal[r.acct]||0)+r.bal*v;
+      if(r.kind==='inc'&&!r.acct)inc+=v;
+      else if(r.kind==='exp'&&!r.acct)cashExp+=v;
+      else if(r.acct){trans+=r.cash*v;if(r.item.type==='credit')transCC+=r.cash*v;else transSD+=r.cash*v;if(r.s==='_exp')cardPurch+=v;if(r.item.type==='debt'&&r.s==='_out')debtOut+=v}
+    }
+    accts.forEach(a=>{const z=balanceAdjAt(a,dc.end),d=z-appliedAdj[a.id];if(d)bal[a.id]=(bal[a.id]||0)+d;appliedAdj[a.id]=z});
+    const total=Object.values(bal).reduce((a,b)=>a+b,0); // все счета, включая наличку
+    const cardsSav=Object.entries(bal).reduce((a,[k,b])=>typeOf[k]==='credit'||typeOf[k]==='savings'||typeOf[k]==='debt'?a+b:a,0);
+    const byType={credit:0,savings:0,debt:0};Object.entries(bal).forEach(([k,b])=>{if(byType[typeOf[k]]!==undefined)byType[typeOf[k]]+=b});
+    res.push({dc,bal:{...bal},total,cardsSav,byType,inc,cashStart,cashExp,trans,transCC,transSD,cardPurch,debtOut});
+  }
+  return res;
+}
+function computeBdr(res){
+  // Закрытые декады (конец раньше даты факта) — по факту; текущая и будущие — по плану,
+  // но если факт уже больше плана — берём факт.
+  const ids=t=>M.items.filter(x=>x.type===t).map(x=>x.id);
+  const L={inc:ids('income'),exp:ids('expense').concat(ids('credit').map(i=>i+'_exp')),
+    savIn:ids('savings').map(i=>i+'_in'),savOut:ids('savings').map(i=>i+'_out'),
+    ccIn:ids('credit').map(i=>i+'_in'),ccOut:ids('credit').map(i=>i+'_out'),ccExp:ids('credit').map(i=>i+'_exp'),
+    dIn:ids('debt').map(i=>i+'_in'),dOut:ids('debt').map(i=>i+'_out')};
+  const cashItem=M.items.find(x=>x.type==='cash');let cash=Number(cashItem&&cashItem.opening)||0,cashAdj=0;
+  const out=[];
+  for(const m of MONTHS_P){
+    const E={},P={},F={};Object.keys(L).forEach(k=>{E[k]=0;P[k]=0;F[k]=0});let nClosed=0;
+    m.dec.forEach(di=>{const dc=DECADES[di];const closed=modeOf(dc)==='f';if(closed)nClosed++;
+      for(const k in L)L[k].forEach(id=>{const p=val(dc,id,'p')||0,f=val(dc,id,'f')||0;P[k]+=p;F[k]+=f;E[k]+=closed?f:used(dc,id)})});
+    const fd=factDate();
+    const st=nClosed===m.dec.length?'f':(nClosed>0||(m.start<=fd&&fd<=m.end))?'c':'p';
+    const income=E.inc,expense=E.exp,sav=E.savIn-E.savOut,cc=E.ccIn-E.ccOut,debt=E.dIn-E.dOut;
+    // наличка и дебет: покупки по кредиткам оплачены картой, а не деньгами — их не вычитаем
+    const cashStart=cash;cash+=income-(expense-E.ccExp)-sav-cc+debt;
+    const z=balanceAdjAt(cashItem,m.end);cash+=z-cashAdj;cashAdj=z;
+    out.push({m,st,income,expense,net:income-expense,sav,cc,debt,cardPurch:E.ccExp,cashStart,cashEnd:cash,incP:P.inc,incF:F.inc,expP:P.exp,expF:F.exp});
+  }
+  return out;
+}
+
+// safe arithmetic: 12000, 8000+150+500, =2*(1500+300), 1 234,56
+function evalExpr(src){
+  let s=String(src).replace(/[\s  ₽]/g,'').replace(/[−–]/g,'-').replace(/^=/,'').replace(/,/g,'.');
+  if(s==='')return null;
+  let i=0;const pk=()=>s[i];
+  const nm=()=>{const mt=/^(\d+(\.\d*)?|\.\d+)/.exec(s.slice(i));if(!mt)throw 0;i+=mt[0].length;return parseFloat(mt[0])};
+  const factor=()=>{if(pk()==='-'){i++;return -factor()}if(pk()==='+'){i++;return factor()}if(pk()==='('){i++;const v=expr();if(pk()!==')')throw 0;i++;return v}return nm()};
+  const term=()=>{let v=factor();while(pk()==='*'||pk()==='/'){const o=s[i++];const w=factor();v=o==='*'?v*w:v/w}return v};
+  const expr=()=>{let v=term();while(pk()==='+'||pk()==='-'){const o=s[i++];const w=term();v=o==='+'?v+w:v-w}return v};
+  try{const v=expr();if(i!==s.length||!Number.isFinite(v))return NaN;return Math.round(v*100)/100}catch(e){return NaN}
+}
+const toMag=v=>v===null?null:Math.abs(v);
+
+// ---- grid contexts: БДДС (декады) и БДР (месяцы) ----
+const CTX={
+  budget:{coll:'decades',periods:DECADES,cur:CUR,get:(pi,rid,k)=>val(DECADES[pi],rid,k),
+    label:rid=>{const r=M.rows[rid];if(!r)return rid;return r.acct?r.item.name+': '+r.name.toLowerCase():r.name},plabel:p=>label(p)},
+  bdr:{coll:'months',periods:MONTHS_P,cur:CURM,get:(pi,rid,k)=>mval(MONTHS_P[pi],rid,k),
+    label:rid=>{const c=M.bcats.find(x=>x.id===rid);return c?c.name:rid},plabel:p=>mlabel(p)},
+};
+const ctx=()=>CTX[ui.view]||CTX.budget;
+
+// ================= storage =================
+const store={kind:'none',write:async()=>{},writeSettings:async()=>{},saveConfig:async()=>{}};
+let pendingWrites=0,writeBatchError=false;
+function setSync(on,t){document.getElementById('syncDot').classList.toggle('on',on);document.getElementById('syncText').textContent=t}
+function track(p){if(!pendingWrites)writeBatchError=false;pendingWrites++;setSync(true,'Сохраняю…');
+  return p.then(v=>v,e=>{writeBatchError=true;console.error(e);toast(errText(e));throw e}).finally(()=>{pendingWrites--;if(!pendingWrites)setSync(!writeBatchError,writeBatchError?'Ошибка сохранения':'Сохранено')})}
+function errText(e){const c=e&&e.code;if(c==='permission_denied'||c==='not_granted')return 'Нет прав на изменение. Нужен доступ с правом вносить изменения.';return 'Не удалось сохранить: '+((e&&e.message)||'проверьте соединение')}
+
+let lastSig='';
+// ---------- сохранённая копия данных на устройстве (только для версии на Google Apps Script) ----------
+const CACHE_KEY='bdds-cache';
+function saveCache(d){try{localStorage.setItem(CACHE_KEY,JSON.stringify({t:Date.now(),d}))}catch(e){}}
+let cacheT=null;
+function cacheState(){ // после правок на этом устройстве — обновить копию, чтобы при следующем открытии было видно последнее
+  if(store.kind!=='gas'||!state.ready||state.stale)return;clearTimeout(cacheT);
+  cacheT=setTimeout(()=>saveCache({settings:state.settings,config:state.config,decades:state.decades,months:state.months,url:state.sheetUrl,sheetName:state.sheetName,appUrl:state.appUrl}),1500)}
+function cacheAge(t){const d=new Date(t),now=new Date();const hm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  return d.toDateString()===now.toDateString()?'на '+hm:'на '+fmtD(iso(d))+' '+hm}
+// пока на экране сохранённые данные — ничего не записывать: сначала дождаться свежих из таблицы
+function staleBlock(){if(!state.stale)return false;toast('Секунду: загружаю свежие данные из таблицы…');return true}
+function useGas(){
+  const call=(fn,...a)=>new Promise((res,rej)=>google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...a));
+  store.kind='gas';document.getElementById('storeText').textContent='Данные в вашей Google Таблице.';
+  store.write=ch=>track(call('setCells',ch));
+  store.writeSettings=s=>track(call('setSettings',s));
+  store.saveConfig=items=>track(call('saveConfig',items));
+  store.call=call;
+  store.pull=()=>pull();
+  store.reload=async()=>{const d=await call('getAll');lastSig=JSON.stringify(d);state.version=d.version||state.version;state.settings=d.settings||{factDate:null};if(!ui.draft)state.config=d.config||null;state.decades=d.decades||{};state.months=d.months||{};state.sheetUrl=d.url||null;state.sheetName=d.sheetName||null;state.appUrl=d.appUrl||null;saveCache(d);safeRender()};
+  const pull=async()=>{
+    if(pendingWrites||editing||(ui.draft&&!state.stale))return;
+    try{const d=await call('getAll');if(pendingWrites||editing||(ui.draft&&!state.stale))return;
+      const wasStale=!!state.stale;state.stale=false;
+      const sig=JSON.stringify(d);if(sig===lastSig&&state.ready){setSync(true,'Синхронизировано');if(wasStale)renderSide(compute());return}lastSig=sig;
+      if(wasStale&&ui.draft&&!ui.dirty)ui.draft=null;
+      // прошла синхронизация с Дзен-мани (например, утренняя) — операции перечитать
+      if(!wasStale&&ops.pkg&&((d.settings||{}).factDate||null)!==((state.settings||{}).factDate||null))setTimeout(opsInvalidate,0); // настройки, открытые на сохранённых данных, перечитать заново
+      state.version=d.version||state.version;state.settings=d.settings||{factDate:null};if(!ui.draft)state.config=d.config||null;state.decades=d.decades||{};state.months=d.months||{};state.sheetUrl=d.url||null;state.sheetName=d.sheetName||null;state.appUrl=d.appUrl||null;
+      saveCache(d);
+      const first=!state.ready||wasStale;state.ready=true;setSync(true,'Синхронизировано');first?render():safeRender();
+      if(first){autoZen();warmOps(1200)}
+    }catch(e){
+      if(state.stale){setSync(false,'Нет связи с таблицей — показаны сохранённые данные');return}
+      setSync(false,'Нет связи с таблицей');if(!state.ready){state.ready=true;render();showNotice('Не удалось прочитать Google Таблицу: '+((e&&e.message)||e)+'. Если это первый запуск, выполните функцию setup в редакторе Apps Script.')}}
+  };
+  // Сразу показать данные, сохранённые на этом устройстве в прошлый раз, — пока таблица отвечает (обычно 2–5 секунд).
+  // Пока свежие данные не пришли, правка заблокирована, а кнопка ⟳ крутится.
+  try{const c=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
+    if(c&&c.d&&c.d.decades){const d=c.d;lastSig=JSON.stringify(d);state.version=d.version||state.version;state.settings=d.settings||{factDate:null};state.config=d.config||null;state.decades=d.decades||{};state.months=d.months||{};state.sheetUrl=d.url||null;state.sheetName=d.sheetName||null;state.appUrl=d.appUrl||null;
+      state.ready=true;state.stale=true;setSync(false,'Показаны данные '+cacheAge(c.t)+' · обновляю…');render()}}catch(e){}
+  setTimeout(()=>{if(!state.ready)setSync(false,'Таблица долго не отвечает — обновите страницу');else if(state.stale)setSync(false,'Таблица долго не отвечает — показаны сохранённые данные')},25000);
+  pull();setInterval(()=>{if(!document.hidden)pull()},20000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)pull()});
+}
+function useClaude(db){
+  store.kind='claude';document.getElementById('storeText').textContent='Изменения видны всей семье сразу.';
+  const remote={decades:new Set(),months:new Set()};const chains={};
+  store.write=ch=>{
+    const by={};ch.forEach(c=>{const k=c.sheet+'/'+c.key;(by[k]=by[k]||[]).push(c)});
+    const jobs=Object.entries(by).map(([path,list])=>{
+      const [coll,key]=path.split('/');const ref=db.doc(path);
+      const full=()=>{const d=state[coll][key];return ref.set({start:d.start,end:d.end,v:d.v})};
+      const job=()=>{
+        if(!remote[coll].has(key))return full().then(()=>remote[coll].add(key));
+        const patch={};list.forEach(c=>{(patch[c.rid]=patch[c.rid]||{})[c.k]=c.value});
+        return ref.update({v:patch}).catch(e=>{if(e&&e.code==='invalid_argument')return full();throw e});
+      };
+      return chains[path]=(chains[path]||Promise.resolve()).catch(()=>{}).then(job);
+    });
+    return track(Promise.all(jobs));
+  };
+  const saveSettingsDoc=()=>db.doc('settings/main').set({factDate:state.settings.factDate||null,order:state.settings.order||null,nav:state.settings.nav||null,launch:state.settings.launch||null,config:state.config||getItems()});
+  store.writeSettings=()=>track(saveSettingsDoc());
+  store.saveConfig=()=>track(saveSettingsDoc());
+  let got={s:false,decades:false,months:false};
+  const done=()=>{if(got.s&&got.decades&&got.months&&!state.ready){state.ready=true;setSync(true,'Синхронизировано');render()}};
+  db.doc('settings/main').onSnapshot(s=>{const d=s.exists?s.data():{};state.settings={factDate:d.factDate||null,order:d.order||null,nav:d.nav||null,launch:d.launch||null,opening:d.opening};state.config=d.config||null;got.s=true;if(state.ready)safeRender();done()},()=>setSync(false,'Нет связи'));
+  for(const coll of ['decades','months'])db.collection(coll).onSnapshot(q=>{const m={};remote[coll].clear();q.docs.forEach(d=>{m[d.id]=d.data();remote[coll].add(d.id)});
+    if(!pendingWrites)state[coll]=m;got[coll]=true;if(state.ready)safeRender();done()},()=>setSync(false,'Нет связи'));
+}
+function useLocal(){
+  store.kind='local';document.getElementById('storeText').textContent='Данные только в этом браузере.';
+  try{const d=JSON.parse(localStorage.getItem('bdds-data')||'null');if(d){state.settings=d.settings||state.settings;state.config=d.config||null;state.decades=d.decades||{};state.months=d.months||{}}}catch(e){}
+  const save=async()=>{try{localStorage.setItem('bdds-data',JSON.stringify({settings:state.settings,config:state.config,decades:state.decades,months:state.months}))}catch(e){toast('Браузер не дал сохранить данные')}};
+  store.write=save;store.writeSettings=save;store.saveConfig=save;
+  state.ready=true;setSync(false,'Без сервера');render();
+  showNotice('Сервер не подключён: данные сохраняются только в этом браузере.');
+}
+async function boot(){
+  if(window.google&&google.script&&google.script.run){useGas();return}
+  let db=null;try{db=window.claude?await window.claude.use('db'):null}catch(e){db=null}
+  if(db)useClaude(db);else useLocal();
+}
+
+// ================= rendering =================
+const $=s=>document.querySelector(s);
+const main=$('#main');
+let noticeText='';
+function showNotice(t){noticeText=t;render()}
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),3200)}
+const noticeHtml=()=>noticeText?`<div class="notice">${esc(noticeText)}</div>`:'';
+
+// короткая подпись для шапки телефона
+function factNoteShort(){
+  const fd=state.settings&&state.settings.factDate;if(!fd)return `<small>факт на сегодня</small>`;
+  const days=Math.round((parse(todayIso)-parse(fd))/864e5);
+  return `<small class="${days>2?'zen-stale':''}" title="Факт загружен из Дзен-мани ${fmtD(fd)}">факт на ${fmtD(fd)}</small>`;
+}
+function factNote(){
+  const fd=state.settings&&state.settings.factDate;
+  if(!fd||store.kind!=='gas')return `<small title="Остатки на старте плюс весь факт до сегодняшнего дня с учётом сохранённых корректировок остатков. План текущей декады сюда не входит — он в карточках декад.">остатки по факту на сегодня</small>`;
+  const days=Math.round((parse(todayIso)-parse(fd))/864e5);
+  const t=`Остатки на старте плюс весь факт, загруженный из Дзен-мани ${fmtD(fd)}, с учётом сохранённых корректировок остатков. Декады после этой даты считаются по плану.`;
+  return days>2?`<small class="zen-stale" title="${t}">факт на ${fmtD(fd)} · ${days} дн. назад</small>`:`<small title="${t}">остатки по факту на ${fmtD(fd)}</small>`;
+}
+// Остатки по факту на сегодня: остаток на старте + весь введённый (или загруженный) факт до текущей декады включительно.
+function factBalances(){
+  const accts=M.items.filter(x=>['cash','credit','savings','debt'].includes(x.type));
+  const bal=Object.fromEntries(accts.map(a=>[a.id,Number(a.opening)||0]));if(!('cash' in bal))bal.cash=0;
+  const all=Object.values(M.rows);
+  for(let i=0;i<=CUR&&i<DECADES.length;i++){const dc=DECADES[i];for(const r of all){const v=val(dc,r.id,'f');if(!v)continue;bal.cash+=r.cash*v;if(r.acct)bal[r.acct]=(bal[r.acct]||0)+r.bal*v}}
+  accts.forEach(a=>{bal[a.id]=(bal[a.id]||0)+balanceAdjAt(a,todayIso)});
+  return bal;
+}
+// ---------- предупреждения: наличка в минусе, кредитка сверх лимита ----------
+function computeAlerts(res){
+  const out=[];if(!res||!res.length)return out;const from=Math.max(0,Math.min(CUR,res.length-1));
+  const neg=[];for(let i=from;i<res.length;i++)if(Math.round(res[i].bal.cash)<0)neg.push(i);
+  if(neg.length){let min=neg[0];neg.forEach(i=>{if(res[i].bal.cash<res[min].bal.cash)min=i});
+    out.push({key:'cash',kind:'cash',dec:neg[0],text:`Наличка и дебет уходят в минус в декаде ${label(DECADES[neg[0]])}: ${money(res[neg[0]].bal.cash)}.`+(neg.length>1?` Всего декад в минусе: ${neg.length}, самая низкая точка — ${money(res[min].bal.cash)} (${label(DECADES[min])}).`:'')});}
+  M.items.filter(a=>a.type==='credit'&&!a.hidden&&(Number(a.limit)>0||limitHist(a).length)).forEach(a=>{
+    for(let i=from;i<res.length;i++){const b=res[i].bal[a.id]||0,lim=limitAt(a,DECADES[i].end);if(lim+b<-0.5){
+      out.push({key:'cc_'+a.id,kind:'card',id:a.id,dec:i,text:`${a.name}: долг ${moneyShort(-b)} ₽ превысит лимит ${moneyShort(lim)} ₽ в декаде ${label(DECADES[i])} (сверх лимита ${moneyShort(-b-lim)} ₽).`});break}}
+  });
+  // накопления не могут быть меньше нуля: это реальные деньги на счёте
+  M.items.filter(a=>a.type==='savings'&&!a.hidden).forEach(a=>{
+    for(let i=from;i<res.length;i++){const b=res[i].bal[a.id]||0;if(b<-0.5){
+      out.push({key:'sv_'+a.id,kind:'sav',id:a.id,dec:i,text:`${a.name}: остаток уйдёт в минус — ${money(b)} в декаде ${label(DECADES[i])}. По плану из накоплений берётся больше, чем на них лежит.`});break}}
+  });
+  return out;
+}
+let alertsNow=[],alertRoomKey='';
+function updateAlerts(){
